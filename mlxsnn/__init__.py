@@ -9,16 +9,16 @@ Examples:
     >>> state = lif.init_state(batch_size=32, features=128)
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # Neuron models
-from mlxsnn.neurons import SpikingNeuron, Leaky, IF
+from mlxsnn.neurons import SpikingNeuron, Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha
 
 # Surrogate gradient functions
 from mlxsnn.surrogate import get_surrogate
 
 # Spike encoding
-from mlxsnn.encoding import rate_encode, latency_encode
+from mlxsnn.encoding import rate_encode, latency_encode, delta_encode, EEGEncoder
 
 # Functional API
 from mlxsnn.functional import lif_step, if_step, fire, reset_subtract, reset_zero
