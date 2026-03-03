@@ -75,6 +75,41 @@ All neuron models support differentiable training via surrogate gradients:
 - SNN loss functions: `rate_coding_loss`, `membrane_loss`, `mse_count_loss`
 - Works with standard MLX optimizers (`mlx.optimizers.Adam`, etc.)
 
+### NIR Interoperability
+
+[NIR](https://github.com/neuromorphs/NIR) (Neuromorphic Intermediate Representation) enables cross-framework SNN model exchange. mlx-snn is the first MLX-native framework in the NIR ecosystem.
+
+```bash
+pip install mlx-snn[nir]
+```
+
+**Export** an mlx-snn model to NIR:
+
+```python
+import mlx.nn as nn
+import mlxsnn, nir
+
+layers = [
+    ('fc1', nn.Linear(784, 128)),
+    ('lif1', mlxsnn.Leaky(beta=0.9)),
+    ('fc2', nn.Linear(128, 10)),
+    ('lif2', mlxsnn.Leaky(beta=0.9)),
+]
+graph = mlxsnn.export_to_nir(layers)
+nir.write('model.nir', graph)
+```
+
+**Import** a NIR model into mlx-snn:
+
+```python
+graph = nir.read('model.nir')
+model = mlxsnn.import_from_nir(graph)
+state = model.init_states(batch_size=32)
+out, state = model(x, state)
+```
+
+Supported conversions: `nn.Linear` ↔ `nir.Affine`/`nir.Linear`, `Leaky` ↔ `nir.LIF`, `IF` ↔ `nir.IF`, `Synaptic` ↔ `nir.CubaLIF`.
+
 ## Migrating from snnTorch
 
 mlx-snn is designed to feel familiar to snnTorch users:
@@ -110,8 +145,8 @@ mlxsnn/
 - [x] **v0.1** — LIF/IF neurons, surrogate gradients, rate/latency encoding, MNIST example
 - [x] **v0.2** — Izhikevich, ALIF, Synaptic, Alpha neurons, EEG encoder, delta encoding
 - [x] **v0.2.1** — Fix fast sigmoid surrogate to match snnTorch rational approximation (97%+ MNIST accuracy)
-- [ ] **v0.3** — Liquid State Machine, reservoir topology, EEG epilepsy example
-- [ ] **v0.4** — `mx.compile` optimization, neuromorphic datasets, visualization
+- [x] **v0.3** — NIR interoperability (export/import), cross-framework SNN model exchange
+- [ ] **v0.4** — Liquid State Machine, reservoir topology, `mx.compile` optimization
 - [ ] **v1.0** — Full docs, benchmarks, JOSS paper, numerical validation vs snnTorch
 
 ## Citation
@@ -123,7 +158,7 @@ If you use mlx-snn in your research, please cite:
   title   = {mlx-snn: Spiking Neural Networks on Apple Silicon via MLX},
   author  = {Qin, Jiahao},
   year    = {2025},
-  version = {0.2.1},
+  version = {0.3.0},
   url     = {https://github.com/D-ST-Sword/mlx-snn},
   note    = {https://pypi.org/project/mlx-snn/}
 }

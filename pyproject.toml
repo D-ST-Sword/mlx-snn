@@ -1,6 +1,6 @@
 [project]
 name = "mlx-snn"
-version = "0.2.1"
+version = "0.3.0"
 description = "Spiking Neural Network library built natively on Apple MLX"
 readme = "README.md"
 license = "MIT"
@@ -23,6 +23,9 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "pytest-xdist",
+]
+nir = [
+    "nir>=1.0",
 ]
 viz = [
     "matplotlib",
