@@ -5,6 +5,7 @@
 mlx-snn brings SNN research to Apple Silicon. It provides spiking neuron models, surrogate gradient training, and spike encoding — all implemented with [MLX](https://github.com/ml-explore/mlx) for unified memory and lazy evaluation on M-series chips.
 
 [![PyPI version](https://img.shields.io/pypi/v/mlx-snn.svg)](https://pypi.org/project/mlx-snn/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Installation
@@ -108,6 +109,7 @@ mlxsnn/
 
 - [x] **v0.1** — LIF/IF neurons, surrogate gradients, rate/latency encoding, MNIST example
 - [x] **v0.2** — Izhikevich, ALIF, Synaptic, Alpha neurons, EEG encoder, delta encoding
+- [x] **v0.2.1** — Fix fast sigmoid surrogate to match snnTorch rational approximation (97%+ MNIST accuracy)
 - [ ] **v0.3** — Liquid State Machine, reservoir topology, EEG epilepsy example
 - [ ] **v0.4** — `mx.compile` optimization, neuromorphic datasets, visualization
 - [ ] **v1.0** — Full docs, benchmarks, JOSS paper, numerical validation vs snnTorch
@@ -118,11 +120,12 @@ If you use mlx-snn in your research, please cite:
 
 ```bibtex
 @software{mlxsnn2025,
-  title  = {mlx-snn: Spiking Neural Networks on Apple MLX},
-  author = {Qie, Jiahao},
-  year   = {2025},
-  url    = {https://github.com/D-ST-Sword/mlx-snn},
-  note   = {https://pypi.org/project/mlx-snn/}
+  title   = {mlx-snn: Spiking Neural Networks on Apple Silicon via MLX},
+  author  = {Qin, Jiahao},
+  year    = {2025},
+  version = {0.2.1},
+  url     = {https://github.com/D-ST-Sword/mlx-snn},
+  note    = {https://pypi.org/project/mlx-snn/}
 }
 ```
 
