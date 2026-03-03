@@ -9,7 +9,7 @@ Examples:
     >>> state = lif.init_state(batch_size=32, features=128)
 """
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 # Neuron models
 from mlxsnn.neurons import SpikingNeuron, Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha
@@ -26,3 +26,10 @@ from mlxsnn.functional import rate_coding_loss, membrane_loss
 
 # Training utilities
 from mlxsnn.training import bptt_forward
+
+# NIR interoperability (optional dependency)
+try:
+    from mlxsnn.nir_export import export_to_nir
+    from mlxsnn.nir_import import import_from_nir, NIRSequential
+except ImportError:
+    pass
