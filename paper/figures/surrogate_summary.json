@@ -1,0 +1,14 @@
+{
+  "fast_sigmoid": {
+    "final_acc": 0.9365,
+    "time_s": 44.73404121398926
+  },
+  "arctan": {
+    "final_acc": 0.9244,
+    "time_s": 43.83346891403198
+  },
+  "straight_through": {
+    "final_acc": 0.4379,
+    "time_s": 46.34216809272766
+  }
+}
