@@ -1,0 +1,39 @@
+[project]
+name = "mlx-snn"
+version = "0.1.0"
+description = "Spiking Neural Network library built natively on Apple MLX"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "Qie"},
+]
+keywords = ["spiking-neural-network", "mlx", "apple-silicon", "neuromorphic"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "mlx>=0.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-xdist",
+]
+viz = [
+    "matplotlib",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mlxsnn*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
