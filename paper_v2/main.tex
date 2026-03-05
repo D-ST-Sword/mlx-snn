@@ -127,7 +127,7 @@ MLX~\citep{mlx2023} has rapidly matured since its December 2023 release. Key fea
 % ===================================================================
 \section{Framework Architecture}
 
-mlx-snn v0.4 substantially extends the initial release with recurrent neurons, additional surrogate gradients, expanded loss functions, and NIR support. Figure~\ref{fig:accuracy_comparison} provides an overview of accuracy across all experimental conditions. In this section, we describe each component with its mathematical formulation.
+mlx-snn v0.4 substantially extends the initial release with recurrent neurons, additional surrogate gradients, expanded loss functions, and NIR support. In this section, we describe each component with its mathematical formulation.
 
 \subsection{Neuron Models}
 \label{sec:neurons}
@@ -234,6 +234,13 @@ The simplest surrogate, passing gradients through unchanged:
 \end{equation}
 
 Figure~\ref{fig:surrogate_gradients} visualizes the gradient shapes of all five surrogate functions.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../figures/fig_surrogate_gradients.pdf}
+\caption{Surrogate gradient function shapes. Top row: forward pass (all produce the Heaviside step function). Bottom row: backward pass (smooth surrogate gradients). Note the different scales: sigmoid ($k=25$) has an extremely narrow gradient peak, while straight-through has constant gradient everywhere.}
+\label{fig:surrogate_gradients}
+\end{figure}
 
 \subsection{Spike Encoding}
 \label{sec:encoding}
@@ -369,7 +376,7 @@ Evaluates rate coding, latency coding, and delta modulation with the baseline Le
 
 Table~\ref{tab:exp1} reports the mean and standard deviation of best test accuracy across seeds for each neuron type, on both mlx-snn (M3~Max) and snnTorch (V100).
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Experiment 1: Neuron type comparison on MNIST. Mean $\pm$ std of best test accuracy (\%) over 5 seeds (mlx-snn) or 3 seeds (snnTorch). Training speed is reported as seconds per epoch.}
 \label{tab:exp1}
@@ -396,7 +403,7 @@ Recurrent neurons show dramatically higher sensitivity to the recurrent weight $
 
 Training speed on the M3~Max is consistently $3.5$--$3.8\times$ faster than the V100 for the Leaky neuron ($5.7$\,s/ep vs.\ $20.9$\,s/ep). Figure~\ref{fig:learning_curves_exp1} shows the learning curves for all neuron types.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../figures/fig_learning_curves_exp1.pdf}
 \caption{Experiment 1: Learning curves for all neuron types on mlx-snn. Solid lines show mean accuracy over 5 seeds; shaded regions indicate $\pm 1$ standard deviation. Recurrent neurons (RLeaky, RSynaptic) exhibit high variance and slower convergence compared to feedforward counterparts.}
@@ -407,7 +414,7 @@ Training speed on the M3~Max is consistently $3.5$--$3.8\times$ faster than the 
 
 Table~\ref{tab:exp2} shows the effect of making $\beta$ and/or the threshold learnable.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Experiment 2: Learnable parameter ablation on MNIST with Leaky neuron. Mean best test accuracy (\%) over 5 seeds (mlx-snn) or 3 seeds (snnTorch).}
 \label{tab:exp2}
@@ -432,7 +439,7 @@ On snnTorch, all learnable configurations perform within $0.4$ percentage points
 
 Table~\ref{tab:exp3} compares all five surrogate gradient functions.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Experiment 3: Surrogate gradient comparison on MNIST with Leaky neuron. All surrogates use their default scale parameter except where noted.}
 \label{tab:exp3}
@@ -456,14 +463,7 @@ The triangular surrogate shows a notable cross-platform difference. mlx-snn's te
 
 The straight-through estimator achieves $68.03\%$ on mlx-snn and $69.32\%$ on snnTorch, showing remarkable cross-platform agreement. Its unbounded gradient (constant 1 everywhere) provides signal to all neurons but lacks the locality that makes fast sigmoid and arctan effective.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\textwidth]{../figures/fig_surrogate_gradients.pdf}
-\caption{Surrogate gradient function shapes. Top row: forward pass (all produce the Heaviside step function). Bottom row: backward pass (smooth surrogate gradients). Note the different scales: sigmoid ($k=25$) has an extremely narrow gradient peak, while straight-through has constant gradient everywhere.}
-\label{fig:surrogate_gradients}
-\end{figure}
-
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../figures/fig_learning_curves_exp3.pdf}
 \caption{Experiment 3: Learning curves for different surrogate gradient functions on mlx-snn. Fast sigmoid and arctan converge quickly; sigmoid fails to learn; triangular tent and straight-through show intermediate performance.}
@@ -474,7 +474,7 @@ The straight-through estimator achieves $68.03\%$ on mlx-snn and $69.32\%$ on sn
 
 Table~\ref{tab:exp4} compares the three loss functions.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Experiment 4: Loss function comparison on MNIST with Leaky neuron.}
 \label{tab:exp4}
@@ -500,7 +500,7 @@ MSE-Membrane loss, which uses only the final timestep's membrane potential rathe
 
 Table~\ref{tab:exp5} compares the three encoding strategies.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Experiment 5: Encoding strategy comparison on MNIST with Leaky neuron.}
 \label{tab:exp5}
@@ -524,7 +524,7 @@ Delta modulation performs poorly on both platforms, particularly on mlx-snn ($46
 
 Figure~\ref{fig:training_speed} and Table~\ref{tab:speed} summarize the training speed comparison across both platforms.
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{Training speed comparison: mlx-snn on Apple M3 Max vs.\ snnTorch on NVIDIA V100. Seconds per epoch on MNIST with batch size 128.}
 \label{tab:speed}
@@ -542,7 +542,7 @@ Synaptic & 6.1 & 25.2 & $4.1\times$ \\
 
 mlx-snn on the M3~Max is $3.7\times$ faster per epoch than snnTorch on the V100 for the baseline Leaky neuron. Recurrent and synaptic neurons are marginally slower due to additional state variables and computations but remain well under 7\,s/ep. This speed advantage stems from MLX's unified memory architecture (zero-copy data access between CPU and GPU), lazy evaluation (whole-graph optimization before execution), and the relatively small model size that fits entirely in the M3~Max's large unified memory without memory pressure.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../figures/fig_training_speed.pdf}
 \caption{Training speed comparison across neuron types. mlx-snn on Apple M3 Max (blue) vs.\ snnTorch on NVIDIA V100 (orange). Error bars indicate standard deviation across seeds.}
@@ -551,20 +551,27 @@ mlx-snn on the M3~Max is $3.7\times$ faster per epoch than snnTorch on the V100 
 
 \subsection{Summary Across All Experiments}
 
-Figure~\ref{fig:heatmap_all_results} provides a comprehensive heatmap view of accuracy across all experimental conditions.
+Figure~\ref{fig:cross_platform} provides a direct cross-platform comparison of accuracy and training speed across all neuron types, and Figure~\ref{fig:accuracy_comparison} shows a side-by-side comparison across all five experiments. Figure~\ref{fig:heatmap_all_results} presents a comprehensive heatmap view of accuracy across all experimental conditions.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{../figures/fig_heatmap_all_results.pdf}
-\caption{Heatmap of test accuracy (\%) across all experimental conditions for mlx-snn (M3 Max) and snnTorch (V100). Darker colors indicate higher accuracy. The consistent $1$--$2\%$ gap between platforms is visible across most configurations, with larger divergences for recurrent neurons and delta encoding.}
-\label{fig:heatmap_all_results}
+\includegraphics[width=\textwidth]{../figures/fig_cross_platform.pdf}
+\caption{Cross-platform comparison of accuracy and training speed across neuron types. mlx-snn (M3 Max) achieves faster training per epoch while snnTorch (V100) attains higher accuracy on most configurations.}
+\label{fig:cross_platform}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../figures/fig_accuracy_comparison.pdf}
 \caption{Side-by-side accuracy comparison across all five experiments. mlx-snn (blue) vs.\ snnTorch (orange). Error bars show $\pm 1$ standard deviation.}
 \label{fig:accuracy_comparison}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{../figures/fig_heatmap_all_results.pdf}
+\caption{Heatmap of test accuracy (\%) across all experimental conditions for mlx-snn (M3 Max) and snnTorch (V100). Darker colors indicate higher accuracy. The consistent $1$--$2\%$ gap between platforms is visible across most configurations, with larger divergences for recurrent neurons and delta encoding.}
+\label{fig:heatmap_all_results}
 \end{figure}
 
 % ===================================================================
@@ -584,7 +591,7 @@ The recurrent weight $V$ in RLeaky and RSynaptic neurons has an outsized effect 
 
 Figure~\ref{fig:recurrent_V_comparison} illustrates the learning curve divergence between different $V$ initializations.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../figures/fig_recurrent_V_comparison.pdf}
 \caption{Effect of recurrent weight $V$ initialization on RLeaky and RSynaptic convergence. Lower $V$ initialization with learnable $V$ produces more stable but still high-variance training.}
@@ -677,18 +684,6 @@ mlx-snn v0.4 is available on PyPI (\texttt{pip install mlx-snn}) and GitHub unde
 
 \bigskip
 \noindent\textbf{Reproducibility.} All experiment scripts, configuration files, and analysis notebooks are available in the project repository at \url{https://github.com/D-ST-Sword/mlx-snn/tree/main/experiments}.
-
-\bigskip
-\noindent\textbf{Citation.}
-\begin{verbatim}
-@article{qin2026mlxsnn_v2,
-  title   = {mlx-snn: A Systematic Evaluation of Spiking Neural
-             Network Training on Apple Silicon},
-  author  = {Qin, Jiahao},
-  journal = {arXiv preprint arXiv:XXXX.XXXXX},
-  year    = {2026}
-}
-\end{verbatim}
 
 % ===================================================================
 % REFERENCES
