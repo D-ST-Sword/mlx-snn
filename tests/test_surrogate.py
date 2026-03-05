@@ -160,7 +160,7 @@ class TestGradientFlow:
         from mlxsnn.neurons import Leaky
 
         lif = Leaky(beta=0.9, threshold=1.0)
-        state = lif.init_state(batch_size=1, features=4)
+        state = lif.init_state(1, 4)
 
         def forward(x):
             spk, _ = lif(x, state)
@@ -178,7 +178,7 @@ class TestGradientFlow:
         from mlxsnn.neurons import IF
 
         neuron = IF(threshold=1.0)
-        state = neuron.init_state(batch_size=1, features=4)
+        state = neuron.init_state(1, 4)
 
         def forward(x):
             spk, _ = neuron(x, state)
@@ -197,7 +197,7 @@ class TestGradientFlow:
         lif = Leaky(beta=0.9, threshold=1.0)
 
         def forward(x_seq):
-            state = lif.init_state(batch_size=1, features=2)
+            state = lif.init_state(1, 2)
             total = mx.array(0.0)
             for t in range(x_seq.shape[0]):
                 spk, state = lif(x_seq[t:t+1], state)

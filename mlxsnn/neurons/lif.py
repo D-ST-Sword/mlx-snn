@@ -38,7 +38,7 @@ class Leaky(SpikingNeuron):
         >>> import mlx.core as mx
         >>> from mlxsnn.neurons import Leaky
         >>> lif = Leaky(beta=0.9)
-        >>> state = lif.init_state(batch_size=4, features=128)
+        >>> state = lif.init_state(4, 128)
         >>> x = mx.ones((4, 128))
         >>> spk, state = lif(x, state)
     """
@@ -70,17 +70,19 @@ class Leaky(SpikingNeuron):
             return self._beta_const
         return self.beta
 
-    def init_state(self, batch_size: int, features: int) -> dict:
+    def init_state(self, batch_size: int, *shape) -> dict:
         """Initialize LIF neuron state.
 
         Args:
             batch_size: Number of samples in the batch.
-            features: Number of neuron features.
+            *shape: Feature dimensions. Can be a single int for FC layers
+                (e.g., ``init_state(B, 128)``) or spatial dims for conv
+                layers (e.g., ``init_state(B, 64, 64, 128)``).
 
         Returns:
             State dict with 'mem' initialized to zeros.
         """
-        return {"mem": mx.zeros((batch_size, features))}
+        return {"mem": mx.zeros((batch_size, *shape))}
 
     def __call__(self, x: mx.array, state: dict) -> tuple[mx.array, dict]:
         """Forward one timestep.

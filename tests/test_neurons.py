@@ -12,7 +12,7 @@ class TestLeakyNeuron:
 
     def test_forward_shape(self):
         lif = Leaky(beta=0.9)
-        state = lif.init_state(batch_size=8, features=32)
+        state = lif.init_state(8, 32)
         x = mx.ones((8, 32)) * 0.5
         spk, new_state = lif(x, state)
         mx.eval(spk, new_state["mem"])
@@ -21,7 +21,7 @@ class TestLeakyNeuron:
 
     def test_init_state_zeros(self):
         lif = Leaky(beta=0.9)
-        state = lif.init_state(batch_size=4, features=16)
+        state = lif.init_state(4, 16)
         mx.eval(state["mem"])
         assert mx.allclose(state["mem"], mx.zeros((4, 16))).item()
 
@@ -93,7 +93,7 @@ class TestLeakyNeuron:
     def test_batch_independence(self):
         """Different batch elements should be processed independently."""
         lif = Leaky(beta=0.0, threshold=1.0)
-        state = lif.init_state(batch_size=2, features=1)
+        state = lif.init_state(2, 1)
         x = mx.array([[0.5], [1.5]])  # Only second element should spike
         spk, state = lif(x, state)
         mx.eval(spk)
@@ -106,7 +106,7 @@ class TestIFNeuron:
 
     def test_forward_shape(self):
         neuron = IF(threshold=1.0)
-        state = neuron.init_state(batch_size=8, features=32)
+        state = neuron.init_state(8, 32)
         x = mx.ones((8, 32)) * 0.5
         spk, new_state = neuron(x, state)
         mx.eval(spk, new_state["mem"])
@@ -138,7 +138,7 @@ class TestIFNeuron:
 
     def test_init_state_zeros(self):
         neuron = IF()
-        state = neuron.init_state(batch_size=4, features=16)
+        state = neuron.init_state(4, 16)
         mx.eval(state["mem"])
         assert mx.allclose(state["mem"], mx.zeros((4, 16))).item()
 
@@ -188,7 +188,7 @@ class TestNumericalConsistency:
     def test_multi_step_lif(self):
         """Run LIF for multiple steps and verify accumulated behavior."""
         lif = Leaky(beta=0.9, threshold=1.0)
-        state = lif.init_state(batch_size=1, features=1)
+        state = lif.init_state(1, 1)
 
         total_spikes = 0
         for _ in range(20):

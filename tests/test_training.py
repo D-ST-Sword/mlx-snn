@@ -15,7 +15,7 @@ class TestBPTTForward:
 
     def test_output_shapes(self):
         lif = Leaky(beta=0.9, threshold=1.0)
-        state = lif.init_state(batch_size=4, features=8)
+        state = lif.init_state(4, 8)
         spikes_in = mx.ones((10, 4, 8)) * 0.5
 
         all_spk, all_mem, final_state = bptt_forward(lif, spikes_in, state)
@@ -25,7 +25,7 @@ class TestBPTTForward:
 
     def test_num_steps_override(self):
         lif = Leaky(beta=0.9, threshold=1.0)
-        state = lif.init_state(batch_size=2, features=4)
+        state = lif.init_state(2, 4)
         spikes_in = mx.ones((20, 2, 4)) * 0.3
 
         all_spk, all_mem, _ = bptt_forward(lif, spikes_in, state, num_steps=5)
@@ -35,7 +35,7 @@ class TestBPTTForward:
     def test_final_state_updated(self):
         """Final state should differ from initial state."""
         lif = Leaky(beta=0.9, threshold=1.0)
-        state = lif.init_state(batch_size=1, features=2)
+        state = lif.init_state(1, 2)
         spikes_in = mx.ones((10, 1, 2)) * 0.5
 
         _, _, final_state = bptt_forward(lif, spikes_in, state)
@@ -91,7 +91,7 @@ class TestLossFunctions:
         # NOTE: Use x[t:t+1] slicing instead of x[t] integer indexing
         # due to MLX scatter limitation with custom_function VJP.
         def loss_fn(x):
-            state = lif.init_state(batch_size=1, features=3)
+            state = lif.init_state(1, 3)
             total = mx.array(0.0)
             for t in range(5):
                 spk, state = lif(x[t:t+1], state)

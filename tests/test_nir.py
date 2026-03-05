@@ -515,7 +515,7 @@ class TestNIRRoundtrip:
         mx.eval(fc.parameters())
 
         # Original forward pass
-        state = lif.init_state(batch_size=4, features=5)
+        state = lif.init_state(4, 5)
         x = mx.random.normal((4, 10))
         mx.eval(x)
         out1, state1 = lif(fc(x), state)

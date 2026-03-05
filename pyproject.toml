@@ -30,6 +30,9 @@ nir = [
 viz = [
     "matplotlib",
 ]
+datasets = [
+    "aedat",
+]
 
 [build-system]
 requires = ["setuptools>=68.0"]

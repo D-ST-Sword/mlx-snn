@@ -34,7 +34,7 @@ class IF(SpikingNeuron):
         >>> import mlx.core as mx
         >>> from mlxsnn.neurons import IF
         >>> neuron = IF(threshold=1.0)
-        >>> state = neuron.init_state(batch_size=4, features=128)
+        >>> state = neuron.init_state(4, 128)
         >>> x = mx.ones((4, 128)) * 0.5
         >>> spk, state = neuron(x, state)  # No spike yet (mem=0.5)
         >>> spk, state = neuron(x, state)  # Spike! (mem=1.0 >= threshold)
@@ -56,17 +56,17 @@ class IF(SpikingNeuron):
             surrogate_scale=surrogate_scale,
         )
 
-    def init_state(self, batch_size: int, features: int) -> dict:
+    def init_state(self, batch_size: int, *shape) -> dict:
         """Initialize IF neuron state.
 
         Args:
             batch_size: Number of samples in the batch.
-            features: Number of neuron features.
+            *shape: Feature dimensions (single int or spatial dims).
 
         Returns:
             State dict with 'mem' initialized to zeros.
         """
-        return {"mem": mx.zeros((batch_size, features))}
+        return {"mem": mx.zeros((batch_size, *shape))}
 
     def __call__(self, x: mx.array, state: dict) -> tuple[mx.array, dict]:
         """Forward one timestep.

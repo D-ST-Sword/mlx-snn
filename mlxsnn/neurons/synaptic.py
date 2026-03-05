@@ -53,7 +53,7 @@ class Synaptic(SpikingNeuron):
         >>> import mlx.core as mx
         >>> from mlxsnn.neurons import Synaptic
         >>> neuron = Synaptic(alpha=0.8, beta=0.9)
-        >>> state = neuron.init_state(batch_size=4, features=128)
+        >>> state = neuron.init_state(4, 128)
         >>> x = mx.ones((4, 128))
         >>> spk, state = neuron(x, state)
     """
@@ -100,20 +100,20 @@ class Synaptic(SpikingNeuron):
             return self._beta_const
         return self.beta
 
-    def init_state(self, batch_size: int, features: int) -> dict:
+    def init_state(self, batch_size: int, *shape) -> dict:
         """Initialize Synaptic neuron state.
 
         Args:
             batch_size: Number of samples in the batch.
-            features: Number of neuron features.
+            *shape: Feature dimensions (single int or spatial dims).
 
         Returns:
             State dict with 'syn' and 'mem' initialized to zeros.
         """
-        shape = (batch_size, features)
+        full_shape = (batch_size, *shape)
         return {
-            "syn": mx.zeros(shape),
-            "mem": mx.zeros(shape),
+            "syn": mx.zeros(full_shape),
+            "mem": mx.zeros(full_shape),
         }
 
     def __call__(self, x: mx.array, state: dict) -> tuple[mx.array, dict]:

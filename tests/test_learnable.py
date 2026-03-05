@@ -68,7 +68,7 @@ class TestLearnThresholdGradient:
 
         def loss_fn(params, x):
             neuron.load_weights(list(params.items()))
-            state = neuron.init_state(batch_size=2, features=3)
+            state = neuron.init_state(2, 3)
             spk, state = neuron(fc(x), state)
             return mx.mean(state["mem"])
 
@@ -85,7 +85,7 @@ class TestLearnThresholdGradient:
 
         def loss_fn(params, x):
             neuron.load_weights(list(params.items()))
-            state = neuron.init_state(batch_size=2, features=3)
+            state = neuron.init_state(2, 3)
             spk, state = neuron(x, state)
             return mx.mean(state["mem"])
 
@@ -101,7 +101,7 @@ class TestLearnThresholdGradient:
 
         def loss_fn(params, x):
             neuron.load_weights(list(params.items()))
-            state = neuron.init_state(batch_size=2, features=3)
+            state = neuron.init_state(2, 3)
             spk, state = neuron(x, state)
             return mx.mean(state["mem"])
 
@@ -146,7 +146,7 @@ class TestCombinedLearnable:
         """Forward pass should work with all params learnable."""
         neuron = Leaky(beta=0.9, learn_beta=True, learn_threshold=True)
         mx.eval(neuron.parameters())
-        state = neuron.init_state(batch_size=2, features=4)
+        state = neuron.init_state(2, 4)
         x = mx.ones((2, 4))
         spk, state = neuron(x, state)
         mx.eval(spk)

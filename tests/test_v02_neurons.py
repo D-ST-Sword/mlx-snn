@@ -10,7 +10,7 @@ class TestIzhikevich:
 
     def test_forward_shape(self):
         n = Izhikevich(preset="RS")
-        state = n.init_state(batch_size=4, features=16)
+        state = n.init_state(4, 16)
         spk, state = n(mx.ones((4, 16)) * 15.0, state)
         mx.eval(spk, state["v"], state["u"])
         assert spk.shape == (4, 16)
@@ -19,7 +19,7 @@ class TestIzhikevich:
 
     def test_init_state_resting(self):
         n = Izhikevich(preset="RS")
-        state = n.init_state(batch_size=2, features=8)
+        state = n.init_state(2, 8)
         mx.eval(state["v"])
         assert mx.allclose(state["v"], mx.full((2, 8), -65.0)).item()
 
@@ -46,7 +46,7 @@ class TestALIF:
 
     def test_forward_shape(self):
         n = ALIF(beta=0.9, rho=0.95, b=0.1)
-        state = n.init_state(batch_size=4, features=16)
+        state = n.init_state(4, 16)
         spk, state = n(mx.ones((4, 16)), state)
         mx.eval(spk, state["mem"], state["adapt"])
         assert spk.shape == (4, 16)
@@ -80,7 +80,7 @@ class TestSynaptic:
 
     def test_forward_shape(self):
         n = Synaptic(alpha=0.9, beta=0.8)
-        state = n.init_state(batch_size=4, features=16)
+        state = n.init_state(4, 16)
         spk, state = n(mx.ones((4, 16)), state)
         mx.eval(spk, state["syn"], state["mem"])
         assert spk.shape == (4, 16)
@@ -108,7 +108,7 @@ class TestAlpha:
 
     def test_forward_shape(self):
         n = Alpha(alpha=0.9, beta=0.8)
-        state = n.init_state(batch_size=4, features=16)
+        state = n.init_state(4, 16)
         spk, state = n(mx.ones((4, 16)), state)
         mx.eval(spk)
         assert spk.shape == (4, 16)

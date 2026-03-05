@@ -14,7 +14,7 @@ class TestRLeaky:
 
     def test_forward_shape(self):
         neuron = RLeaky(beta=0.9)
-        state = neuron.init_state(batch_size=4, features=128)
+        state = neuron.init_state(4, 128)
         x = mx.ones((4, 128))
         spk, new_state = neuron(x, state)
         mx.eval(spk)
@@ -24,7 +24,7 @@ class TestRLeaky:
 
     def test_init_state_zeros(self):
         neuron = RLeaky(beta=0.9)
-        state = neuron.init_state(batch_size=2, features=64)
+        state = neuron.init_state(2, 64)
         mx.eval(state["mem"], state["spk"])
         assert mx.allclose(state["mem"], mx.zeros((2, 64))).item()
         assert mx.allclose(state["spk"], mx.zeros((2, 64))).item()
@@ -32,7 +32,7 @@ class TestRLeaky:
     def test_recurrence_effect(self):
         """Output at t should depend on spike at t-1 (not just input)."""
         neuron = RLeaky(beta=0.0, V=5.0)  # No decay, strong recurrence
-        state = neuron.init_state(batch_size=1, features=1)
+        state = neuron.init_state(1, 1)
         x = mx.zeros((1, 1))
 
         # Step 1: no input, no previous spike -> no spike
@@ -109,7 +109,7 @@ class TestRLeaky:
     def test_batch_independence(self):
         """Different batch elements should evolve independently."""
         neuron = RLeaky(beta=0.5, V=0.5)
-        state = neuron.init_state(batch_size=2, features=1)
+        state = neuron.init_state(2, 1)
         x = mx.array([[2.0], [0.1]])
         spk, state = neuron(x, state)
         mx.eval(spk)
@@ -126,7 +126,7 @@ class TestRLeaky:
         def loss_fn(params, x):
             fc.load_weights(list(params["fc"].items()))
             neuron.load_weights(list(params["neuron"].items()))
-            state = neuron.init_state(batch_size=2, features=3)
+            state = neuron.init_state(2, 3)
             h = fc(x)
             spk, state = neuron(h, state)
             spk, state = neuron(h, state)
@@ -149,7 +149,7 @@ class TestRSynaptic:
 
     def test_forward_shape(self):
         neuron = RSynaptic(alpha=0.8, beta=0.9)
-        state = neuron.init_state(batch_size=4, features=128)
+        state = neuron.init_state(4, 128)
         x = mx.ones((4, 128))
         spk, new_state = neuron(x, state)
         mx.eval(spk)
@@ -160,14 +160,14 @@ class TestRSynaptic:
 
     def test_init_state_zeros(self):
         neuron = RSynaptic(alpha=0.8, beta=0.9)
-        state = neuron.init_state(batch_size=2, features=64)
+        state = neuron.init_state(2, 64)
         mx.eval(state["syn"], state["mem"], state["spk"])
         for key in ["syn", "mem", "spk"]:
             assert mx.allclose(state[key], mx.zeros((2, 64))).item()
 
     def test_recurrence_effect(self):
         neuron = RSynaptic(alpha=0.0, beta=0.0, V=5.0)
-        state = neuron.init_state(batch_size=1, features=1)
+        state = neuron.init_state(1, 1)
         x = mx.zeros((1, 1))
 
         # Inject a spike
@@ -199,7 +199,7 @@ class TestRSynaptic:
         def loss_fn(params, x):
             fc.load_weights(list(params["fc"].items()))
             neuron.load_weights(list(params["neuron"].items()))
-            state = neuron.init_state(batch_size=2, features=3)
+            state = neuron.init_state(2, 3)
             h = fc(x)
             spk, state = neuron(h, state)
             spk, state = neuron(h, state)
@@ -219,7 +219,7 @@ class TestRSynaptic:
     def test_multi_step(self):
         """Run multiple timesteps and verify state accumulation."""
         neuron = RSynaptic(alpha=0.8, beta=0.9)
-        state = neuron.init_state(batch_size=2, features=8)
+        state = neuron.init_state(2, 8)
         x = mx.random.normal((2, 8)) * 0.3
         mx.eval(x)
 

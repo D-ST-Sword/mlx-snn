@@ -71,7 +71,7 @@ class Izhikevich(SpikingNeuron):
     >>> import mlx.core as mx
     >>> from mlxsnn.neurons.izhikevich import Izhikevich
     >>> neuron = Izhikevich(preset="RS")
-    >>> state = neuron.init_state(batch_size=4, features=128)
+    >>> state = neuron.init_state(4, 128)
     >>> x = mx.ones((4, 128)) * 10.0
     >>> spk, state = neuron(x, state)
     """
@@ -115,15 +115,15 @@ class Izhikevich(SpikingNeuron):
         self.d = d
         self.dt = dt
 
-    def init_state(self, batch_size: int, features: int) -> dict:
+    def init_state(self, batch_size: int, *shape) -> dict:
         """Initialize Izhikevich neuron state.
 
         Parameters
         ----------
         batch_size : int
             Number of samples in the batch.
-        features : int
-            Number of neuron features.
+        *shape
+            Feature dimensions (single int or spatial dims).
 
         Returns
         -------
@@ -132,8 +132,9 @@ class Izhikevich(SpikingNeuron):
             initialised to -65.0 mV) and ``'u'`` (recovery variable,
             initialised to ``b * v``).
         """
-        v = mx.full((batch_size, features), -65.0)
-        u = mx.full((batch_size, features), self.b * -65.0)
+        full_shape = (batch_size, *shape)
+        v = mx.full(full_shape, -65.0)
+        u = mx.full(full_shape, self.b * -65.0)
         return {"v": v, "u": u}
 
     def __call__(self, x: mx.array, state: dict) -> tuple[mx.array, dict]:
