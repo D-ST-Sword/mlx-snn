@@ -57,7 +57,7 @@
 \lstset{style=python}
 
 % --- Title ---
-\title{\textbf{Comprehensive Benchmarking of Spiking Neural Networks\\on Apple Silicon: mlx-snn v0.4}}
+\title{\textbf{mlx-snn: A Systematic Evaluation of Spiking Neural Network\\Training on Apple Silicon}}
 
 \author{
     Jiahao Qin \\
@@ -74,7 +74,7 @@
 % ABSTRACT
 % ===================================================================
 \begin{abstract}
-We present a comprehensive benchmarking study of spiking neural network (SNN) training on Apple Silicon using mlx-snn v0.4, the first SNN library built natively on Apple's MLX framework. Since the initial release~\citep{qin2026mlxsnn}, mlx-snn has been extended with recurrent neuron models (RLeaky, RSynaptic), learnable decay and threshold parameters, five surrogate gradient functions (fast sigmoid, arctan, sigmoid, triangular tent, straight-through), three classification loss functions, and bidirectional interoperability with the Neuromorphic Intermediate Representation (NIR) standard. We conduct a systematic five-experiment benchmark study on MNIST digit classification, evaluating the effects of neuron type, learnable parameters, surrogate gradient function, loss function, and spike encoding strategy, each averaged over five random seeds. We provide the first cross-framework comparison between mlx-snn on an Apple M3 Max and snnTorch on an NVIDIA V100, revealing that mlx-snn achieves $3.7\times$ faster training per epoch while maintaining competitive classification accuracy ($96.3\%$ vs.\ $97.4\%$ for the baseline LIF configuration). Our analysis identifies critical sensitivity of recurrent neurons to the initialization of the recurrent weight $V$, demonstrates that the triangular tent surrogate gradient significantly outperforms snnTorch's sign-flipping variant, and provides practical guidelines for SNN hyperparameter selection on Apple Silicon. All code, configurations, and analysis scripts are publicly available.
+We present a comprehensive benchmarking study of spiking neural network (SNN) training on Apple Silicon using mlx-snn v0.4, the first SNN library built natively on Apple's MLX framework. Since the initial release~\citep{qin2026mlxsnn}, mlx-snn has been extended with recurrent neuron models (RLeaky, RSynaptic), learnable decay and threshold parameters, five surrogate gradient functions (fast sigmoid, arctan, sigmoid, triangular tent, straight-through), three classification loss functions, and bidirectional interoperability with the Neuromorphic Intermediate Representation (NIR) standard. We conduct a systematic five-experiment benchmark study on MNIST digit classification, evaluating the effects of neuron type, learnable parameters, surrogate gradient function, loss function, and spike encoding strategy, each averaged over five random seeds. We provide the first cross-framework comparison between mlx-snn on an Apple M3 Max and snnTorch on an NVIDIA V100. On this small-scale benchmark, mlx-snn achieves $3.7\times$ faster training per epoch --- largely attributable to unified memory eliminating CPU--GPU transfer overhead --- while snnTorch attains higher classification accuracy ($97.4\%$ vs.\ $96.3\%$ for the baseline LIF configuration), reflecting the maturity of PyTorch's autograd and snnTorch's native custom backward passes. Our analysis identifies critical sensitivity of recurrent neurons to the initialization of the recurrent weight $V$, demonstrates that the triangular tent surrogate gradient significantly outperforms snnTorch's sign-flipping variant, and provides practical guidelines for SNN hyperparameter selection on Apple Silicon. All code, configurations, and analysis scripts are publicly available.
 \end{abstract}
 
 \noindent\textbf{Project:} \url{https://github.com/D-ST-Sword/mlx-snn} \quad \textbf{PyPI:} \texttt{pip install mlx-snn}
@@ -599,14 +599,17 @@ CE-Rate consistently outperforms CE-Count and MSE-Membrane across both platforms
 
 \subsection{Cross-Platform Analysis}
 
-\paragraph{Speed vs.\ accuracy trade-off.}
-mlx-snn on the M3~Max achieves $3.7$--$4.1\times$ faster training than snnTorch on the V100, with a consistent $\sim$1 percentage point accuracy gap. This gap is attributable to the STE-based surrogate gradient pattern (Eq.~\ref{eq:ste}), which is necessitated by MLX's current limitations with custom VJP definitions. The STE pattern provides correct Heaviside forward behavior and smooth gradients, but the gradient path through \texttt{mx.stop\_gradient} differs subtly from a native custom backward pass, particularly in how gradient magnitudes are scaled during backpropagation through time. We expect this gap to narrow as MLX's \texttt{mx.custom\_function} API matures.
+\paragraph{Speed advantage requires careful interpretation.}
+mlx-snn on the M3~Max achieves $3.7$--$4.1\times$ faster training than snnTorch on the V100 on this benchmark. However, this speedup should not be interpreted as a raw hardware superiority claim. The $784$--$128$--$10$ architecture has approximately $10^5$ parameters --- far too small to saturate the V100's 5,120 CUDA cores. At this scale, a significant portion of the V100's per-epoch time is consumed by CPU$\leftrightarrow$GPU data transfers over PCIe, kernel launch overhead, and PyTorch framework dispatch. The M3~Max's unified memory architecture eliminates these bottlenecks, providing its greatest advantage precisely in such small-model regimes. For larger models (e.g., convolutional SNNs on CIFAR-10 with millions of parameters), we expect this speed advantage to diminish or reverse as compute intensity grows relative to memory transfer costs.
 
-\paragraph{Unified memory advantage.}
-The M3~Max's 128\,GB unified memory means that CPU preprocessing (data loading, augmentation) and GPU computation (forward/backward passes) share the same physical memory, eliminating the PCIe transfer overhead that exists between CPU RAM and V100 HBM2. For the relatively small MNIST workload, this architectural advantage significantly reduces per-epoch overhead. Larger models and datasets may see different trade-offs as compute intensity grows relative to memory transfer costs.
+\paragraph{Accuracy advantage of snnTorch.}
+snnTorch consistently achieves $\sim$1 percentage point higher accuracy across most configurations ($97.4\%$ vs.\ $96.3\%$ for baseline LIF). This gap is attributable to the STE-based surrogate gradient pattern (Eq.~\ref{eq:ste}), which is necessitated by MLX's current limitations with custom VJP definitions. The STE pattern provides correct Heaviside forward behavior and smooth gradients, but the gradient path through \texttt{mx.stop\_gradient} differs subtly from snnTorch's native \texttt{torch.autograd.Function} custom backward pass, particularly in how gradient magnitudes are scaled during backpropagation through time. We expect this gap to narrow as MLX's \texttt{mx.custom\_function} API matures.
+
+\paragraph{Complementary strengths.}
+The two platforms exhibit complementary strengths: mlx-snn delivers faster iteration on Apple Silicon hardware without dedicated GPU infrastructure, while snnTorch offers higher accuracy through PyTorch's mature autograd and a broader ecosystem of tutorials, datasets, and community support. The appropriate choice depends on the researcher's hardware, scale requirements, and whether rapid prototyping or maximum accuracy is prioritized.
 
 \paragraph{Hardware generational context.}
-The NVIDIA V100 (released 2017, Volta architecture) is now an older-generation GPU. A more contemporary comparison against an A100 or H100 would likely narrow the speed gap. However, the V100 remains widely available in academic computing clusters and cloud instances, making it a relevant reference point for the research community. The key takeaway is that Apple Silicon provides competitive SNN training performance without requiring dedicated GPU infrastructure.
+The NVIDIA V100 (released 2017, Volta architecture) is now an older-generation GPU. A more contemporary comparison against an A100 or H100 would likely narrow the speed gap while potentially widening the accuracy advantage. However, the V100 remains widely available in academic computing clusters and cloud instances, making it a relevant reference point for the research community.
 
 \subsection{Limitations}
 
@@ -646,15 +649,31 @@ Based on our experimental findings, we offer the following recommendations for p
 \end{enumerate}
 
 % ===================================================================
-% 8. CONCLUSION
+% 8. BROADER IMPACT
+% ===================================================================
+\section{Broader Impact}
+
+This work contributes to the SNN research community along three dimensions.
+
+\paragraph{Expanding hardware accessibility.}
+The SNN software ecosystem has been almost exclusively tied to the NVIDIA CUDA stack. By providing a native MLX implementation, mlx-snn allows researchers with Apple Silicon hardware --- now common in academic settings --- to conduct SNN experiments without access to GPU clusters or cloud computing. This lowers the barrier to entry for SNN research, particularly for students and researchers at institutions with limited GPU infrastructure.
+
+\paragraph{Cross-platform reproducibility.}
+Our systematic cross-platform comparison highlights that implementation choices (surrogate gradient formulation, recurrent weight initialization, loss function) can matter as much as algorithmic design. The finding that ``triangular surrogate'' can mean two different functions with a $13$ percentage point accuracy difference underscores the need for precise specification in SNN publications. We hope this benchmark motivates the community toward more rigorous reporting of implementation details, and that the NIR interoperability in mlx-snn facilitates cross-framework model validation.
+
+\paragraph{Practical guidelines.}
+The experimental findings on learnable parameters, loss functions, and encoding strategies provide actionable guidance that is largely platform-independent. The sensitivity of recurrent SNNs to weight initialization and the failure modes of certain surrogate gradient configurations are relevant to all SNN practitioners, not just mlx-snn users. We expect these guidelines to be particularly valuable for newcomers to the field who face a large hyperparameter space with limited practical guidance in the literature.
+
+% ===================================================================
+% 9. CONCLUSION
 % ===================================================================
 \section{Conclusion}
 
-We have presented a comprehensive benchmarking study of spiking neural network training using mlx-snn v0.4 on Apple Silicon. Through five systematic experiments on MNIST with multiple random seeds, we have evaluated the effects of neuron type, learnable parameters, surrogate gradient function, loss function, and spike encoding strategy. Our cross-platform comparison between mlx-snn on an Apple M3~Max and snnTorch on an NVIDIA V100 reveals that Apple Silicon provides $3.7$--$4.1\times$ faster training with competitive accuracy, establishing mlx-snn as a viable alternative for SNN research without dedicated GPU infrastructure.
+We have presented a systematic evaluation of spiking neural network training using mlx-snn v0.4 on Apple Silicon. Through five experiments on MNIST with multiple random seeds, we have evaluated the effects of neuron type, learnable parameters, surrogate gradient function, loss function, and spike encoding strategy. Our cross-platform comparison between mlx-snn on an Apple M3~Max and snnTorch on an NVIDIA V100 reveals complementary strengths: on this small-scale benchmark, mlx-snn delivers $3.7$--$4.1\times$ faster training per epoch, benefiting from unified memory's elimination of data transfer overhead, while snnTorch achieves $\sim$1 percentage point higher accuracy through PyTorch's mature custom backward pass infrastructure. These results establish mlx-snn as a viable platform for rapid SNN prototyping on Apple Silicon, though the speed comparison should not be generalized to larger-scale models where GPU compute intensity would be better utilized.
 
-Key findings include the critical sensitivity of recurrent neurons to weight initialization, the superiority of the triangular tent surrogate over sign-flipping implementations, and the robustness of cross-entropy on spike rate as a loss function. These results provide actionable guidelines for SNN practitioners on Apple Silicon and motivate further development of the mlx-snn ecosystem.
+Key findings include the critical sensitivity of recurrent neurons to weight initialization, the superiority of the triangular tent surrogate over sign-flipping implementations, and the robustness of cross-entropy on spike rate as a loss function. These results provide actionable guidelines for SNN practitioners and motivate further development of the mlx-snn ecosystem.
 
-mlx-snn v0.4 is available on PyPI (\texttt{pip install mlx-snn}) and GitHub under the MIT license. Future work includes extending benchmarks to neuromorphic datasets (SHD, N-MNIST, DVS-Gesture), implementing convolutional SNN layers, adding liquid state machine support, and developing \texttt{mx.compile}-optimized training loops as MLX continues to mature.
+mlx-snn v0.4 is available on PyPI (\texttt{pip install mlx-snn}) and GitHub under the MIT license. Future work includes extending benchmarks to larger-scale neuromorphic datasets (SHD, N-MNIST, DVS-Gesture) and convolutional architectures where cross-platform trade-offs may differ, as well as liquid state machine support and \texttt{mx.compile}-optimized training loops as MLX continues to mature.
 
 \bigskip
 \noindent\textbf{Reproducibility.} All experiment scripts, configuration files, and analysis notebooks are available in the project repository at \url{https://github.com/D-ST-Sword/mlx-snn/tree/main/experiments}.
@@ -663,8 +682,8 @@ mlx-snn v0.4 is available on PyPI (\texttt{pip install mlx-snn}) and GitHub unde
 \noindent\textbf{Citation.}
 \begin{verbatim}
 @article{qin2026mlxsnn_v2,
-  title   = {Comprehensive Benchmarking of Spiking Neural
-             Networks on Apple Silicon: mlx-snn v0.4},
+  title   = {mlx-snn: A Systematic Evaluation of Spiking Neural
+             Network Training on Apple Silicon},
   author  = {Qin, Jiahao},
   journal = {arXiv preprint arXiv:XXXX.XXXXX},
   year    = {2026}
