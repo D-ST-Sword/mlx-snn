@@ -6,7 +6,7 @@ functions, and training utilities — all implemented with MLX for Apple Silicon
 Examples:
     >>> import mlxsnn
     >>> lif = mlxsnn.Leaky(beta=0.9)
-    >>> state = lif.init_state(batch_size=32, features=128)
+    >>> state = lif.init_state(32, 128)
 """
 
 __version__ = "0.4.0"
@@ -29,11 +29,34 @@ from mlxsnn.functional import rate_coding_loss, membrane_loss, mse_count_loss
 from mlxsnn.functional import ce_rate_loss, ce_count_loss, mse_membrane_loss
 from mlxsnn.functional import spike_rate, spike_count
 
+# Composite layers (conv, pooling, flatten)
+from mlxsnn.layers import (
+    SpikingConv2d, SpikingMaxPool2d, SpikingAvgPool2d, SpikingFlatten,
+    create_neuron,
+)
+
 # Training utilities
 from mlxsnn.training import bptt_forward
 
 # Utility functions
 from mlxsnn.utils import init_states
+
+# Dataset loaders
+from mlxsnn.datasets import (
+    DVSGestureDataset,
+    CIFAR10DVSDataset,
+    NMNISTDataset,
+    EventDataloader,
+    create_dataloader,
+)
+
+# Mathematically-principled Conv SNN operators
+from mlxsnn.operators import (
+    TemporalAggregatedConv,
+    FourierTemporalConv,
+    InfoMaxSpikeConv,
+    TemporalCollapseConv,
+)
 
 # NIR interoperability (optional dependency)
 try:
