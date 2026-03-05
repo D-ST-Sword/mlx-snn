@@ -178,21 +178,22 @@ mlxsnn/
 
 ## Publications
 
-- **mlx-snn v0.1**: [Spiking Neural Networks on Apple Silicon via MLX](https://arxiv.org/abs/2503.01816) (arXiv, 2025)
-- **mlx-snn v0.4**: Comprehensive Benchmarking of Spiking Neural Networks on Apple Silicon (in preparation)
+- **mlx-snn v0.1**: [Spiking Neural Networks on Apple Silicon via MLX](https://arxiv.org/abs/2603.03529) (arXiv, 2026)
+- **mlx-snn v0.4**: Spiking Neural Network Training on Apple Silicon: Cross-Framework Benchmarking (in preparation)
 
 ## Citation
 
 If you use mlx-snn in your research, please cite:
 
 ```bibtex
-@software{mlxsnn2025,
-  title   = {mlx-snn: Spiking Neural Networks on Apple Silicon via MLX},
-  author  = {Qin, Jiahao},
-  year    = {2025},
-  version = {0.4.0},
-  url     = {https://github.com/D-ST-Sword/mlx-snn},
-  note    = {https://pypi.org/project/mlx-snn/}
+@misc{qin2026mlxsnn,
+  title         = {mlx-snn: Spiking Neural Networks on Apple Silicon via {MLX}},
+  author        = {Jiahao Qin},
+  year          = {2026},
+  eprint        = {2603.03529},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2603.03529}
 }
 ```
 

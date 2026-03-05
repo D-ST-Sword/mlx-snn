@@ -6,3 +6,5 @@ build/
 .pytest_cache/
 *.egg
 .mnist_data/
+paper/
+paper_v2/
