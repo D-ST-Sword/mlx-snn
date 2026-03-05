@@ -74,7 +74,7 @@
 % ABSTRACT
 % ===================================================================
 \begin{abstract}
-We present a comprehensive benchmarking study of spiking neural network (SNN) training on Apple Silicon using mlx-snn v0.4, the first SNN library built natively on Apple's MLX framework. Since the initial release~\citep{qin2026mlxsnn}, mlx-snn has been extended with recurrent neuron models (RLeaky, RSynaptic), learnable decay and threshold parameters, five surrogate gradient functions (fast sigmoid, arctan, sigmoid, triangular tent, straight-through), three classification loss functions, and bidirectional interoperability with the Neuromorphic Intermediate Representation (NIR) standard. We conduct a systematic five-experiment benchmark study on MNIST digit classification, evaluating the effects of neuron type, learnable parameters, surrogate gradient function, loss function, and spike encoding strategy, each averaged over five random seeds. We provide the first cross-framework comparison between mlx-snn on an Apple M3 Max and snnTorch on an NVIDIA V100, revealing that mlx-snn achieves $3.7\times$ faster training per epoch while maintaining competitive classification accuracy ($96.3\%$ vs.\ $97.3\%$ for the baseline LIF configuration). Our analysis identifies critical sensitivity of recurrent neurons to the initialization of the recurrent weight $V$, demonstrates that the triangular tent surrogate gradient significantly outperforms snnTorch's sign-flipping variant, and provides practical guidelines for SNN hyperparameter selection on Apple Silicon. All code, configurations, and analysis scripts are publicly available.
+We present a comprehensive benchmarking study of spiking neural network (SNN) training on Apple Silicon using mlx-snn v0.4, the first SNN library built natively on Apple's MLX framework. Since the initial release~\citep{qin2026mlxsnn}, mlx-snn has been extended with recurrent neuron models (RLeaky, RSynaptic), learnable decay and threshold parameters, five surrogate gradient functions (fast sigmoid, arctan, sigmoid, triangular tent, straight-through), three classification loss functions, and bidirectional interoperability with the Neuromorphic Intermediate Representation (NIR) standard. We conduct a systematic five-experiment benchmark study on MNIST digit classification, evaluating the effects of neuron type, learnable parameters, surrogate gradient function, loss function, and spike encoding strategy, each averaged over five random seeds. We provide the first cross-framework comparison between mlx-snn on an Apple M3 Max and snnTorch on an NVIDIA V100, revealing that mlx-snn achieves $3.7\times$ faster training per epoch while maintaining competitive classification accuracy ($96.3\%$ vs.\ $97.4\%$ for the baseline LIF configuration). Our analysis identifies critical sensitivity of recurrent neurons to the initialization of the recurrent weight $V$, demonstrates that the triangular tent surrogate gradient significantly outperforms snnTorch's sign-flipping variant, and provides practical guidelines for SNN hyperparameter selection on Apple Silicon. All code, configurations, and analysis scripts are publicly available.
 \end{abstract}
 
 \noindent\textbf{Project:} \url{https://github.com/D-ST-Sword/mlx-snn} \quad \textbf{PyPI:} \texttt{pip install mlx-snn}
@@ -380,19 +380,19 @@ Table~\ref{tab:exp1} reports the mean and standard deviation of best test accura
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
 \textbf{Neuron Type} & Acc.\,(\%) & Time\,(s/ep) & Acc.\,(\%) & Time\,(s/ep) \\
 \midrule
-Leaky ($\beta=0.9$) & $96.29 \pm 0.24$ & 5.7 & $97.34 \pm 0.05$ & 20.9 \\
+Leaky ($\beta=0.9$) & $96.29 \pm 0.24$ & 5.7 & $97.38 \pm 0.09$ & 20.9 \\
 RLeaky ($V=0.5$, fixed) & $77.10 \pm 6.40$ & 6.4 & --- & --- \\
-RLeaky ($V=0.1$, learn) & $91.58 \pm 4.84$ & 6.8 & $68.08 \pm 5.64$ & 25.8 \\
-Synaptic ($\alpha{=}0.8$) & $94.42 \pm 0.25$ & 6.1 & $95.76 \pm 0.10$ & 25.2 \\
+RLeaky ($V=0.1$, learn) & $91.58 \pm 4.84$ & 6.8 & $75.10 \pm 2.51$ & 25.7 \\
+Synaptic ($\alpha{=}0.8$) & $94.42 \pm 0.25$ & 6.1 & $96.08 \pm 0.05$ & 25.2 \\
 RSynaptic ($V=0.5$, fixed) & $54.82 \pm 3.76$ & 6.8 & --- & --- \\
-RSynaptic ($V=0.1$, learn) & $89.00 \pm 3.91$ & 7.3 & $52.24 \pm 13.26$ & 29.2 \\
+RSynaptic ($V=0.1$, learn) & $89.00 \pm 3.91$ & 7.3 & $58.68 \pm 14.52$ & 29.2 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The feedforward Leaky neuron achieves the highest accuracy on both platforms ($96.29\%$ on mlx-snn, $97.34\%$ on snnTorch). The Synaptic neuron performs comparably, with its two-state dynamics providing smooth temporal filtering at the cost of a slight accuracy reduction.
+The feedforward Leaky neuron achieves the highest accuracy on both platforms ($96.29\%$ on mlx-snn, $97.38\%$ on snnTorch). The Synaptic neuron performs comparably, with its two-state dynamics providing smooth temporal filtering at the cost of a slight accuracy reduction.
 
-Recurrent neurons show dramatically higher sensitivity to the recurrent weight $V$. RLeaky with $V=0.5$ achieves only $77.10\%$ on mlx-snn, but reducing $V$ to $0.1$ and making it learnable improves accuracy to $91.58\%$, albeit with high variance ($\pm 4.84\%$). RSynaptic shows the same pattern more severely: $V=0.5$ collapses to near-random accuracy ($54.82\%$), while $V=0.1$ (learnable) recovers to $89.00\%$. On snnTorch, RLeaky and RSynaptic with $V=1.0$ (learnable) achieve $68.08\%$ and $52.24\%$ respectively, confirming that this sensitivity is intrinsic to recurrent SNN dynamics rather than framework-specific.
+Recurrent neurons show dramatically higher sensitivity to the recurrent weight $V$. RLeaky with $V=0.5$ achieves only $77.10\%$ on mlx-snn, but reducing $V$ to $0.1$ and making it learnable improves accuracy to $91.58\%$, albeit with high variance ($\pm 4.84\%$). RSynaptic shows the same pattern more severely: $V=0.5$ collapses to near-random accuracy ($54.82\%$), while $V=0.1$ (learnable) recovers to $89.00\%$. On snnTorch, RLeaky and RSynaptic with $V=1.0$ (learnable) achieve $75.10\%$ and $58.68\%$ respectively, confirming that this sensitivity is intrinsic to recurrent SNN dynamics rather than framework-specific.
 
 Training speed on the M3~Max is consistently $3.5$--$3.8\times$ faster than the V100 for the Leaky neuron ($5.7$\,s/ep vs.\ $20.9$\,s/ep). Figure~\ref{fig:learning_curves_exp1} shows the learning curves for all neuron types.
 
@@ -416,10 +416,10 @@ Table~\ref{tab:exp2} shows the effect of making $\beta$ and/or the threshold lea
 \toprule
 \textbf{Configuration} & \textbf{mlx-snn (M3 Max)} & \textbf{snnTorch (V100)} \\
 \midrule
-Baseline (fixed $\beta$, fixed $V_{\text{thr}}$) & $96.29 \pm 0.24$ & 97.34 \\
-\texttt{learn\_beta} & $95.50 \pm 0.33$ & 96.94 \\
-\texttt{learn\_threshold} & $96.48 \pm 0.05$ & 97.24 \\
-\texttt{learn\_beta} + \texttt{learn\_threshold} & $94.70 \pm 0.16$ & 97.23 \\
+Baseline (fixed $\beta$, fixed $V_{\text{thr}}$) & $96.29 \pm 0.24$ & $97.38 \pm 0.09$ \\
+\texttt{learn\_beta} & $95.50 \pm 0.33$ & $97.06 \pm 0.08$ \\
+\texttt{learn\_threshold} & $96.48 \pm 0.05$ & $97.35 \pm 0.03$ \\
+\texttt{learn\_beta} + \texttt{learn\_threshold} & $94.70 \pm 0.16$ & $97.27 \pm 0.10$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -441,20 +441,20 @@ Table~\ref{tab:exp3} compares all five surrogate gradient functions.
 \toprule
 \textbf{Surrogate Function} & \textbf{mlx-snn (M3 Max)} & \textbf{snnTorch (V100)} \\
 \midrule
-Fast Sigmoid ($k=25$) & $96.29 \pm 0.24$ & 96.69 \\
-Arctan ($\alpha=2$) & $95.96 \pm 0.17$ & \textbf{97.34} \\
-Sigmoid ($k=25$) & $44.82 \pm 13.55$ & 9.91 \\
-Triangular & $85.95 \pm 9.51$ & 50.79 \\
-Straight-Through & $68.03 \pm 0.92$ & 66.01 \\
+Fast Sigmoid ($k=25$) & $96.29 \pm 0.24$ & $96.82 \pm 0.08$ \\
+Arctan ($\alpha=2$) & $95.96 \pm 0.17$ & $\mathbf{97.38 \pm 0.09}$ \\
+Sigmoid ($k=25$) & $44.82 \pm 13.55$ & $9.91 \pm 0.16$ \\
+Triangular & $85.95 \pm 9.51$ & $72.73 \pm 7.02$ \\
+Straight-Through & $68.03 \pm 0.92$ & $69.32 \pm 0.82$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Fast sigmoid and arctan are the most effective surrogates on both platforms, consistent with the robustness findings of \citet{zenke2021remarkable}. The standard sigmoid at $k=25$ fails on both platforms ($44.82\%$ on mlx-snn, $9.91\%$ on snnTorch), because the gradient is concentrated in an extremely narrow region around zero, causing vanishing gradients for most neurons.
 
-The most striking cross-platform difference appears in the triangular surrogate. mlx-snn's tent function achieves $85.95\%$, substantially outperforming snnTorch's sign-flipping implementation ($50.79\%$). This is because snnTorch's triangular gradient assigns $+1$ below threshold and $-1$ above, creating conflicting gradient signals that destabilize training. Our tent function (Eq.~\ref{eq:triangular}) provides a positive, localized gradient that monotonically decays from the threshold, resulting in stable optimization. However, triangular shows high variance ($\pm 9.51\%$) across seeds, indicating sensitivity to weight initialization. Figure~\ref{fig:learning_curves_exp3} shows the convergence behavior, and Figure~\ref{fig:surrogate_gradients} visualizes the gradient shapes.
+The triangular surrogate shows a notable cross-platform difference. mlx-snn's tent function achieves $85.95\%$, outperforming snnTorch's sign-flipping implementation ($72.73\%$). This is because snnTorch's triangular gradient assigns $+1$ below threshold and $-1$ above, creating conflicting gradient signals that destabilize training. Our tent function (Eq.~\ref{eq:triangular}) provides a positive, localized gradient that monotonically decays from the threshold, resulting in more stable optimization. Both implementations show high variance ($\pm 9.51\%$ for mlx-snn, $\pm 7.02\%$ for snnTorch), indicating sensitivity to weight initialization. Figure~\ref{fig:learning_curves_exp3} shows the convergence behavior, and Figure~\ref{fig:surrogate_gradients} visualizes the gradient shapes.
 
-The straight-through estimator achieves $68.03\%$ on mlx-snn and $66.01\%$ on snnTorch, showing remarkable cross-platform agreement. Its unbounded gradient (constant 1 everywhere) provides signal to all neurons but lacks the locality that makes fast sigmoid and arctan effective.
+The straight-through estimator achieves $68.03\%$ on mlx-snn and $69.32\%$ on snnTorch, showing remarkable cross-platform agreement. Its unbounded gradient (constant 1 everywhere) provides signal to all neurons but lacks the locality that makes fast sigmoid and arctan effective.
 
 \begin{figure}[t]
 \centering
@@ -483,14 +483,14 @@ Table~\ref{tab:exp4} compares the three loss functions.
 \toprule
 \textbf{Loss Function} & \textbf{mlx-snn (M3 Max)} & \textbf{snnTorch (V100)} \\
 \midrule
-CE-Rate (Eq.~\ref{eq:ce_rate}) & $\mathbf{96.29 \pm 0.24}$ & \textbf{97.34} \\
-CE-Count (Eq.~\ref{eq:ce_count}) & $93.73 \pm 1.46$ & 97.29 \\
-MSE-Membrane (Eq.~\ref{eq:mse_mem}) & $93.12 \pm 0.25$ & 96.78 \\
+CE-Rate (Eq.~\ref{eq:ce_rate}) & $\mathbf{96.29 \pm 0.24}$ & $\mathbf{97.38 \pm 0.09}$ \\
+CE-Count (Eq.~\ref{eq:ce_count}) & $93.73 \pm 1.46$ & $97.57 \pm 0.12$ \\
+MSE-Membrane (Eq.~\ref{eq:mse_mem}) & $93.12 \pm 0.25$ & $96.99 \pm 0.11$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-CE-Rate is the best-performing loss on both platforms. On mlx-snn, CE-Count and MSE-Membrane lag by $\sim$2.5--3 percentage points. On snnTorch, CE-Count nearly matches CE-Rate ($97.29\%$ vs.\ $97.34\%$), while MSE-Membrane shows a slight degradation ($96.78\%$).
+CE-Rate is the best-performing loss on mlx-snn. On mlx-snn, CE-Count and MSE-Membrane lag by $\sim$2.5--3 percentage points. On snnTorch, CE-Count slightly outperforms CE-Rate ($97.57\%$ vs.\ $97.38\%$), while MSE-Membrane shows a slight degradation ($96.99\%$).
 
 The gap on mlx-snn for CE-Count is notable because CE-Rate and CE-Count differ only in whether the temporal sum is divided by $T$. This normalization appears to stabilize gradient magnitudes when combined with the STE surrogate pattern. Without normalization (CE-Count), the logits grow proportionally with $T$, potentially saturating the softmax and reducing gradient effectiveness. CE-Count also shows higher variance ($\pm 1.46\%$) compared to CE-Rate ($\pm 0.24\%$).
 
@@ -509,16 +509,16 @@ Table~\ref{tab:exp5} compares the three encoding strategies.
 \toprule
 \textbf{Encoding} & \textbf{mlx-snn (M3 Max)} & \textbf{snnTorch (V100)} \\
 \midrule
-Rate (Poisson) & $\mathbf{96.29 \pm 0.24}$ & \textbf{97.34} \\
-Latency (TTFS) & $89.33 \pm 8.44$ & 94.48 \\
-Delta & $46.47 \pm 1.10$ & 81.91 \\
+Rate (Poisson) & $\mathbf{96.29 \pm 0.24}$ & $\mathbf{97.38 \pm 0.09}$ \\
+Latency (TTFS) & $89.33 \pm 8.44$ & $94.48 \pm 0.04$ \\
+Delta & $46.47 \pm 1.10$ & $82.45 \pm 0.17$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Rate coding achieves the best accuracy on both platforms. Latency coding shows a $\sim$7 point degradation on average ($89.33\%$), but with very high variance ($\pm 8.44\%$), indicating that time-to-first-spike encoding is sensitive to random initialization. Some seeds achieve $>$95\% while others fall below 80\%.
 
-Delta modulation performs poorly on both platforms, particularly on mlx-snn ($46.47\%$). This encoding is fundamentally mismatched with static MNIST images: delta encoding computes temporal differences, but MNIST images are presented as constant inputs across all timesteps, resulting in zero spikes after the first timestep (or throughout, depending on the padding convention). The higher snnTorch accuracy ($81.91\%$) on delta encoding suggests potential differences in the encoding implementation (e.g., how the first timestep is handled) that partially compensate for this mismatch.
+Delta modulation performs poorly on both platforms, particularly on mlx-snn ($46.47\%$). This encoding is fundamentally mismatched with static MNIST images: delta encoding computes temporal differences, but MNIST images are presented as constant inputs across all timesteps, resulting in zero spikes after the first timestep (or throughout, depending on the padding convention). The higher snnTorch accuracy ($82.45\%$) on delta encoding suggests potential differences in the encoding implementation (e.g., how the first timestep is handled) that partially compensate for this mismatch.
 
 \subsection{Cross-Platform Performance Analysis}
 
@@ -592,7 +592,7 @@ Figure~\ref{fig:recurrent_V_comparison} illustrates the learning curve divergenc
 \end{figure}
 
 \paragraph{Surrogate gradient implementation matters more than function choice.}
-While \citet{zenke2021remarkable} found that network performance is robust to surrogate function choice, our results show that \emph{implementation details} can cause large performance differences. The triangular surrogate exemplifies this: mlx-snn's tent function achieves $85.95\%$ while snnTorch's sign-flipping variant reaches only $50.79\%$. Both are valid interpretations of a ``triangular'' surrogate, but the tent function's positive, localized gradient is substantially more effective for gradient-based optimization. Similarly, the standard sigmoid at scale $k=25$ fails catastrophically on both platforms due to its extremely narrow gradient peak --- a consequence of the default hyperparameter rather than the function itself.
+While \citet{zenke2021remarkable} found that network performance is robust to surrogate function choice, our results show that \emph{implementation details} can cause large performance differences. The triangular surrogate exemplifies this: mlx-snn's tent function achieves $85.95\%$ while snnTorch's sign-flipping variant reaches only $72.73\%$. Both are valid interpretations of a ``triangular'' surrogate, but the tent function's positive, localized gradient is substantially more effective for gradient-based optimization. Similarly, the standard sigmoid at scale $k=25$ fails catastrophically on both platforms due to its extremely narrow gradient peak --- a consequence of the default hyperparameter rather than the function itself.
 
 \paragraph{Cross-entropy on rate is the most robust loss.}
 CE-Rate consistently outperforms CE-Count and MSE-Membrane across both platforms. The temporal averaging in CE-Rate implicitly normalizes gradient magnitudes, preventing the logit scale from growing with $T$. This is particularly important for SNN training where the number of timesteps directly affects the scale of spike counts.
