@@ -413,12 +413,15 @@ By bringing SNN research to Apple Silicon, mlx-snn enables researchers using Mac
 We have presented mlx-snn, the first spiking neural network library built natively on Apple's MLX framework. The library provides six neuron models, four surrogate gradient functions, and four spike encoding methods with an API designed for compatibility with snnTorch. Our experiments validate the library's correctness on MNIST classification across five configurations and three backends, achieving up to 97.28\% accuracy with 2.0--2.5$\times$ faster training and 3--10$\times$ lower GPU memory compared to snnTorch on the same M3 Max hardware. mlx-snn is open-source under the MIT license and available on PyPI (\texttt{pip install mlx-snn}). To cite this work:
 
 \begin{verbatim}
-@article{qin2026mlxsnn,
+@misc{qin2026mlxsnn,
   title   = {mlx-snn: Spiking Neural Networks
              on Apple Silicon via {MLX}},
-  author  = {Qin, Jiahao},
-  journal = {arXiv preprint arXiv:XXXX.XXXXX},
-  year    = {2026}
+  author  = {Jiahao Qin},
+  year    = {2026},
+  eprint  = {2603.03529},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url     = {https://arxiv.org/abs/2603.03529}
 }
 \end{verbatim}
 
