@@ -16,6 +16,7 @@ class SpikingNeuron(nn.Module):
 
     Args:
         threshold: Membrane potential threshold for spike generation.
+        learn_threshold: If True, threshold becomes a learnable parameter.
         reset_mechanism: How to reset membrane after a spike.
             'subtract' — subtract threshold from membrane potential.
             'zero' — reset membrane to zero.
@@ -40,14 +41,24 @@ class SpikingNeuron(nn.Module):
     def __init__(
         self,
         threshold: float = 1.0,
+        learn_threshold: bool = False,
         reset_mechanism: str = "subtract",
         surrogate_fn: str = "fast_sigmoid",
         surrogate_scale: float = 25.0,
     ):
         super().__init__()
-        self.threshold = threshold
+        if learn_threshold:
+            self.threshold = mx.array(threshold)
+        else:
+            self._threshold_const = threshold
         self.reset_mechanism = reset_mechanism
         self._surrogate_fn = get_surrogate(surrogate_fn, surrogate_scale)
+
+    def _get_threshold(self):
+        """Return threshold as a float or tracked array."""
+        if hasattr(self, "_threshold_const"):
+            return self._threshold_const
+        return self.threshold
 
     def init_state(self, batch_size: int, *args) -> dict:
         """Initialize neuron hidden state.
@@ -86,7 +97,7 @@ class SpikingNeuron(nn.Module):
         Returns:
             Binary spike array (1 where mem >= threshold, 0 otherwise).
         """
-        return self._surrogate_fn(mem - self.threshold)
+        return self._surrogate_fn(mem - self._get_threshold())
 
     def reset(self, mem: mx.array, spk: mx.array) -> mx.array:
         """Apply reset mechanism after spike generation.
@@ -99,7 +110,7 @@ class SpikingNeuron(nn.Module):
             Membrane potential after reset.
         """
         if self.reset_mechanism == "subtract":
-            return mem - spk * self.threshold
+            return mem - spk * self._get_threshold()
         elif self.reset_mechanism == "zero":
             return mem * (1.0 - spk)
         return mem  # "none"

@@ -82,7 +82,7 @@ def _convert_leaky(module: Leaky, num_neurons: int,
         tau=np.full(num_neurons, tau, dtype=np.float32),
         r=np.full(num_neurons, r, dtype=np.float32),
         v_leak=np.zeros(num_neurons, dtype=np.float32),
-        v_threshold=np.full(num_neurons, module.threshold, dtype=np.float32),
+        v_threshold=np.full(num_neurons, module._get_threshold(), dtype=np.float32),
     )
 
 
@@ -98,7 +98,7 @@ def _convert_if(module: IF, num_neurons: int) -> nir.IF:
     """
     return nir.IF(
         r=np.ones(num_neurons, dtype=np.float32),
-        v_threshold=np.full(num_neurons, module.threshold, dtype=np.float32),
+        v_threshold=np.full(num_neurons, module._get_threshold(), dtype=np.float32),
     )
 
 
@@ -134,7 +134,7 @@ def _convert_synaptic(module: Synaptic, num_neurons: int,
         tau_mem=np.full(num_neurons, tau_mem, dtype=np.float32),
         r=np.full(num_neurons, r, dtype=np.float32),
         v_leak=np.zeros(num_neurons, dtype=np.float32),
-        v_threshold=np.full(num_neurons, module.threshold, dtype=np.float32),
+        v_threshold=np.full(num_neurons, module._get_threshold(), dtype=np.float32),
         w_in=np.ones(num_neurons, dtype=np.float32),
     )
 

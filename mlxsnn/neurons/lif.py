@@ -29,6 +29,7 @@ class Leaky(SpikingNeuron):
             longer memory; closer to 0 gives faster decay.
         learn_beta: If True, beta becomes a learnable parameter.
         threshold: Spike threshold voltage.
+        learn_threshold: If True, threshold becomes a learnable parameter.
         reset_mechanism: Reset method after spike ('subtract', 'zero', 'none').
         surrogate_fn: Surrogate gradient function name or callable.
         surrogate_scale: Scale parameter for surrogate gradient.
@@ -47,12 +48,14 @@ class Leaky(SpikingNeuron):
         beta: float = 0.9,
         learn_beta: bool = False,
         threshold: float = 1.0,
+        learn_threshold: bool = False,
         reset_mechanism: str = "subtract",
         surrogate_fn: str = "fast_sigmoid",
         surrogate_scale: float = 25.0,
     ):
         super().__init__(
             threshold=threshold,
+            learn_threshold=learn_threshold,
             reset_mechanism=reset_mechanism,
             surrogate_fn=surrogate_fn,
             surrogate_scale=surrogate_scale,

@@ -9,10 +9,13 @@ Examples:
     >>> state = lif.init_state(batch_size=32, features=128)
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # Neuron models
-from mlxsnn.neurons import SpikingNeuron, Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha
+from mlxsnn.neurons import (
+    SpikingNeuron, Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha,
+    RLeaky, RSynaptic,
+)
 
 # Surrogate gradient functions
 from mlxsnn.surrogate import get_surrogate
@@ -22,10 +25,15 @@ from mlxsnn.encoding import rate_encode, latency_encode, delta_encode, EEGEncode
 
 # Functional API
 from mlxsnn.functional import lif_step, if_step, fire, reset_subtract, reset_zero
-from mlxsnn.functional import rate_coding_loss, membrane_loss
+from mlxsnn.functional import rate_coding_loss, membrane_loss, mse_count_loss
+from mlxsnn.functional import ce_rate_loss, ce_count_loss, mse_membrane_loss
+from mlxsnn.functional import spike_rate, spike_count
 
 # Training utilities
 from mlxsnn.training import bptt_forward
+
+# Utility functions
+from mlxsnn.utils import init_states
 
 # NIR interoperability (optional dependency)
 try:
