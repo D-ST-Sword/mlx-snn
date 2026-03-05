@@ -1,6 +1,7 @@
 """Tests for surrogate gradient functions."""
 
 import mlx.core as mx
+import numpy as np
 import pytest
 
 from mlxsnn.surrogate import get_surrogate
@@ -89,20 +90,22 @@ class TestStraightThrough:
         expected = mx.array([0.0, 1.0, 1.0])
         assert mx.allclose(out, expected).item()
 
-    def test_gradient_in_window(self):
-        """Gradient should be nonzero only within window."""
+    def test_gradient_everywhere(self):
+        """Gradient should be 1 everywhere (identity pass-through)."""
         fn = straight_through_surrogate(scale=1.0)
         grad_fn = mx.grad(lambda x: mx.sum(fn(x)))
-        # x=0 is within window |x| <= 0.5
-        x_in = mx.array([0.0])
-        g_in = grad_fn(x_in)
-        mx.eval(g_in)
-        assert g_in.item() > 0
-        # x=1.0 is outside window
-        x_out = mx.array([1.0])
-        g_out = grad_fn(x_out)
-        mx.eval(g_out)
-        assert g_out.item() == 0.0
+        # Gradient at x=0
+        g_zero = grad_fn(mx.array([0.0]))
+        mx.eval(g_zero)
+        assert np.isclose(g_zero.item(), 1.0, atol=1e-5)
+        # Gradient at x=1.0 (far from threshold) should also be 1.0
+        g_far = grad_fn(mx.array([1.0]))
+        mx.eval(g_far)
+        assert np.isclose(g_far.item(), 1.0, atol=1e-5)
+        # Gradient at x=-2.0
+        g_neg = grad_fn(mx.array([-2.0]))
+        mx.eval(g_neg)
+        assert np.isclose(g_neg.item(), 1.0, atol=1e-5)
 
 
 class TestCustomSurrogate:

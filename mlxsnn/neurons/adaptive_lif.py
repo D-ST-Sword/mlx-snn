@@ -46,6 +46,7 @@ class ALIF(SpikingNeuron):
         learn_beta: If True, beta becomes a learnable parameter.
         learn_rho: If True, rho becomes a learnable parameter.
         threshold: Base spike threshold voltage.
+        learn_threshold: If True, threshold becomes a learnable parameter.
         reset_mechanism: Reset method after spike ('subtract', 'zero', 'none').
         surrogate_fn: Surrogate gradient function name or callable.
         surrogate_scale: Scale parameter for surrogate gradient.
@@ -67,12 +68,14 @@ class ALIF(SpikingNeuron):
         learn_beta: bool = False,
         learn_rho: bool = False,
         threshold: float = 1.0,
+        learn_threshold: bool = False,
         reset_mechanism: str = "subtract",
         surrogate_fn: str = "fast_sigmoid",
         surrogate_scale: float = 25.0,
     ):
         super().__init__(
             threshold=threshold,
+            learn_threshold=learn_threshold,
             reset_mechanism=reset_mechanism,
             surrogate_fn=surrogate_fn,
             surrogate_scale=surrogate_scale,
@@ -134,7 +137,7 @@ class ALIF(SpikingNeuron):
         adapt = rho * state["adapt"]
 
         # Spike with adaptive threshold.
-        effective_threshold = self.threshold + self.b * adapt
+        effective_threshold = self._get_threshold() + self.b * adapt
         spk = self._surrogate_fn(mem - effective_threshold)
 
         # Update adaptation variable with new spike.

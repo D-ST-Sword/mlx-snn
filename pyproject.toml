@@ -1,6 +1,6 @@
 [project]
 name = "mlx-snn"
-version = "0.3.0"
+version = "0.4.0"
 description = "Spiking Neural Network library built natively on Apple MLX"
 readme = "README.md"
 license = "MIT"

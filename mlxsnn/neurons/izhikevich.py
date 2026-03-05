@@ -91,6 +91,7 @@ class Izhikevich(SpikingNeuron):
         # reset is handled manually (not via the base-class ``reset``).
         super().__init__(
             threshold=30.0,
+            learn_threshold=False,
             reset_mechanism="none",
             surrogate_fn=surrogate_fn,
             surrogate_scale=surrogate_scale,

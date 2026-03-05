@@ -11,11 +11,15 @@ References:
 from mlxsnn.surrogate.fast_sigmoid import fast_sigmoid_surrogate
 from mlxsnn.surrogate.arctan import arctan_surrogate
 from mlxsnn.surrogate.straight_through import straight_through_surrogate
+from mlxsnn.surrogate.sigmoid import sigmoid_surrogate
+from mlxsnn.surrogate.triangular import triangular_surrogate
 
 _SURROGATE_REGISTRY = {
     "fast_sigmoid": fast_sigmoid_surrogate,
     "arctan": arctan_surrogate,
     "straight_through": straight_through_surrogate,
+    "sigmoid": sigmoid_surrogate,
+    "triangular": triangular_surrogate,
 }
 
 
@@ -33,6 +37,10 @@ def get_surrogate(name: str, scale: float = 25.0):
 
     Raises:
         ValueError: If name is not in the registry.
+
+    Available surrogates:
+        'fast_sigmoid', 'arctan', 'straight_through', 'sigmoid',
+        'triangular'.
     """
     if callable(name):
         return name

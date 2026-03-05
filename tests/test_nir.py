@@ -369,7 +369,7 @@ class TestNIRImport:
         assert isinstance(lif, Leaky)
         expected_beta = 1.0 - DEFAULT_DT / 1e-3  # 0.9
         assert np.isclose(lif._get_beta(), expected_beta, atol=1e-6)
-        assert np.isclose(lif.threshold, 1.5)
+        assert np.isclose(lif._get_threshold(), 1.5)
 
     def test_convert_nir_if(self):
         node = nir.IF(
@@ -378,7 +378,7 @@ class TestNIRImport:
         )
         neuron = _convert_nir_if(node)
         assert isinstance(neuron, IF)
-        assert np.isclose(neuron.threshold, 2.0)
+        assert np.isclose(neuron._get_threshold(), 2.0)
 
     def test_convert_nir_cubalif(self):
         node = nir.CubaLIF(
@@ -465,7 +465,7 @@ class TestNIRRoundtrip:
 
         imported_beta = model.lif1._get_beta()
         assert np.isclose(imported_beta, original_beta, atol=1e-6)
-        assert np.isclose(model.lif1.threshold, 1.0, atol=1e-6)
+        assert np.isclose(model.lif1._get_threshold(), 1.0, atol=1e-6)
 
     def test_roundtrip_if_params(self):
         """Export IF -> NIR IF -> import IF: threshold should match."""
@@ -477,7 +477,7 @@ class TestNIRRoundtrip:
         graph = export_to_nir(layers)
         model = import_from_nir(graph)
 
-        assert np.isclose(model.if1.threshold, 2.0, atol=1e-6)
+        assert np.isclose(model.if1._get_threshold(), 2.0, atol=1e-6)
 
     def test_roundtrip_synaptic_params(self):
         """Export Synaptic -> CubaLIF -> import Synaptic: alpha, beta match."""
@@ -491,7 +491,7 @@ class TestNIRRoundtrip:
 
         assert np.isclose(model.syn1._get_alpha(), 0.8, atol=1e-6)
         assert np.isclose(model.syn1._get_beta(), 0.9, atol=1e-6)
-        assert np.isclose(model.syn1.threshold, 1.5, atol=1e-6)
+        assert np.isclose(model.syn1._get_threshold(), 1.5, atol=1e-6)
 
     def test_roundtrip_linear_weights(self):
         """Export -> import preserves Linear weight values."""
