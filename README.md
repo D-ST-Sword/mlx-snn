@@ -124,18 +124,18 @@ Supported conversions: `nn.Linear` <-> `nir.Affine`/`nir.Linear`, `Leaky` <-> `n
 
 Experiments on MNIST (784-128-10 SNN, 25 timesteps, 5 seeds) on Apple M3 Max, compared with snnTorch on NVIDIA V100:
 
-| Configuration | mlx-snn (M3 Max) | snnTorch (V100) | Speed (mlx-snn) |
-|---------------|-------------------|-----------------|------------------|
-| Leaky (LIF) | 96.3% | 97.3% | **5.7 s/epoch** |
-| Synaptic | 94.4% | 95.8% | 6.1 s/epoch |
-| RLeaky (V=0.1, learn) | 91.6% | 68.1% | 6.8 s/epoch |
-| RSynaptic (V=0.1, learn) | 89.0% | 52.2% | 7.3 s/epoch |
-| Fast Sigmoid surrogate | 96.3% | 96.7% | 5.7 s/epoch |
-| Triangular (Tent) surrogate | 86.0% | 50.8% | 10.9 s/epoch |
+| Configuration | mlx-snn (M3 Max) | snnTorch (V100) | Speed (mlx-snn) | Speed (snnTorch) |
+|---------------|-------------------|-----------------|------------------|------------------|
+| Leaky (LIF) | 96.3% | 97.3% | **5.7 s/epoch** | 20.9 s/epoch |
+| Synaptic | 94.4% | 95.8% | 6.1 s/epoch | 25.2 s/epoch |
+| RLeaky (V=0.1, learn) | 91.6% | 68.1% | 6.8 s/epoch | 25.7 s/epoch |
+| RSynaptic (V=0.1, learn) | 89.0% | 52.2% | 7.3 s/epoch | 29.2 s/epoch |
+| Fast Sigmoid surrogate | 96.3% | 96.7% | 5.7 s/epoch | 20.9 s/epoch |
+| Triangular (Tent) surrogate | 86.0% | 50.8% | 10.9 s/epoch | 20.9 s/epoch |
 
 mlx-snn achieves ~3.7-4.1x faster training per epoch on the M3 Max compared to the V100, while maintaining competitive accuracy. Recurrent neurons with learnable weights significantly outperform snnTorch's default configurations.
 
-For full results, see our [benchmarking paper](paper_v2/) and the [experiments/](experiments/) directory.
+For full results, see our benchmarking paper and the [experiments/](experiments/) directory.
 
 ## Migrating from snnTorch
 
