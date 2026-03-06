@@ -162,9 +162,9 @@ class InfoMaxSpikeConv(nn.Module):
         Returns:
             Tuple of (gated_spikes, new_state).
         """
-        # Update input firing rate estimate.
-        input_rate = mx.mean(mx.abs(x) > 0.5)
-        self._firing_rate_in = (
+        # Update input firing rate estimate (detached from grad graph).
+        input_rate = mx.stop_gradient(mx.mean(mx.abs(x) > 0.5))
+        self._firing_rate_in = mx.stop_gradient(
             self._ema_decay * self._firing_rate_in
             + (1.0 - self._ema_decay) * input_rate
         )
@@ -181,10 +181,10 @@ class InfoMaxSpikeConv(nn.Module):
         gates = self._get_gates()  # (C_out,)
         gated_spk = spk * gates
 
-        # Update per-channel firing rate estimates.
+        # Update per-channel firing rate estimates (detached from grad graph).
         # Mean over batch and spatial dims: (C_out,)
-        per_channel_rate = mx.mean(spk, axis=(0, 1, 2))
-        self._firing_rate_out = (
+        per_channel_rate = mx.stop_gradient(mx.mean(spk, axis=(0, 1, 2)))
+        self._firing_rate_out = mx.stop_gradient(
             self._ema_decay * self._firing_rate_out
             + (1.0 - self._ema_decay) * per_channel_rate
         )
