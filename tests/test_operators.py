@@ -1,4 +1,4 @@
-"""Tests for the four Conv SNN operators (TAC, FTC, IMC, TCC)."""
+"""Tests for Conv SNN operators (TAC, TAC-TP, L-TAC, FTC, IMC, TCC)."""
 
 import math
 
@@ -8,6 +8,8 @@ import pytest
 
 from mlxsnn.operators import (
     TemporalAggregatedConv,
+    TACTemporalPreserve,
+    LearnableTAC,
     FourierTemporalConv,
     InfoMaxSpikeConv,
     TemporalCollapseConv,
@@ -87,6 +89,155 @@ class TestTAC:
         _, state1 = tac(x1, state)
         mx.eval(state1["mem"])
         assert not mx.allclose(state1["mem"], mx.zeros_like(state1["mem"]))
+
+
+# ──────────────────────────────────────────────────────────────────────
+# TACTemporalPreserve (TAC-TP) Tests
+# ──────────────────────────────────────────────────────────────────────
+
+class TestTACTP:
+    """Tests for TACTemporalPreserve."""
+
+    def test_output_preserves_T(self):
+        """TAC-TP should preserve the full temporal dimension T."""
+        tactp = TACTemporalPreserve(3, 16, 3, chunk_size=4, padding=1)
+        state = tactp.init_state(2, (8, 8))
+        x = mx.ones((16, 2, 8, 8, 3))
+        spk, new_state = tactp(x, state)
+        mx.eval(spk)
+        assert list(spk.shape) == [16, 2, 8, 8, 16]  # T=16 preserved!
+
+    def test_k1_equivalent_to_standard(self):
+        """K=1 should be equivalent to standard per-timestep processing."""
+        tactp = TACTemporalPreserve(3, 16, 3, chunk_size=1, padding=1)
+        state = tactp.init_state(2, (8, 8))
+        x = mx.ones((10, 2, 8, 8, 3))
+        spk, _ = tactp(x, state)
+        mx.eval(spk)
+        assert list(spk.shape) == [10, 2, 8, 8, 16]
+
+    def test_non_divisible_T(self):
+        """T not divisible by K should still preserve T."""
+        tactp = TACTemporalPreserve(3, 16, 3, chunk_size=4, padding=1)
+        state = tactp.init_state(2, (8, 8))
+        x = mx.ones((10, 2, 8, 8, 3))
+        spk, _ = tactp(x, state)
+        mx.eval(spk)
+        assert list(spk.shape) == [10, 2, 8, 8, 16]  # 10, not 3!
+
+    def test_gradient_flow(self):
+        tactp = TACTemporalPreserve(2, 8, 3, chunk_size=2, padding=1)
+        state = tactp.init_state(2, (4, 4))
+        x = mx.random.normal((8, 2, 4, 4, 2))
+
+        def loss_fn(model, x, s):
+            spk, _ = model(x, s)
+            return mx.mean(spk)
+
+        loss, grads = nn.value_and_grad(tactp, loss_fn)(tactp, x, state)
+        mx.eval(loss, grads)
+        assert float(mx.sqrt(mx.sum(grads['conv']['weight'] ** 2)).item()) > 0
+
+    def test_conv_calls_count(self):
+        """Should report correct number of conv calls."""
+        tactp = TACTemporalPreserve(3, 16, 3, chunk_size=4, padding=1)
+        assert tactp.conv_calls(16) == 4
+        assert tactp.conv_calls(10) == 3
+        assert tactp.conv_calls(1) == 1
+
+    def test_state_persistence(self):
+        """Membrane state should carry across calls."""
+        tactp = TACTemporalPreserve(2, 8, 3, chunk_size=2, padding=1)
+        state = tactp.init_state(2, (4, 4))
+        x = mx.ones((4, 2, 4, 4, 2))
+        _, state1 = tactp(x, state)
+        mx.eval(state1["mem"])
+        assert not mx.allclose(state1["mem"], mx.zeros_like(state1["mem"]))
+
+    def test_same_T_as_tac_k1(self):
+        """TAC-TP with any K should output same T as TAC with K=1."""
+        T = 12
+        x = mx.random.normal((T, 2, 4, 4, 2))
+
+        for K in [1, 2, 3, 4, 6]:
+            tactp = TACTemporalPreserve(2, 8, 3, chunk_size=K, padding=1)
+            state = tactp.init_state(2, (4, 4))
+            spk, _ = tactp(x, state)
+            mx.eval(spk)
+            assert spk.shape[0] == T, f"K={K}: expected T={T}, got {spk.shape[0]}"
+
+
+# ──────────────────────────────────────────────────────────────────────
+# LearnableTAC (L-TAC) Tests
+# ──────────────────────────────────────────────────────────────────────
+
+class TestLTAC:
+    """Tests for LearnableTAC."""
+
+    def test_output_shape_preserve(self):
+        """L-TAC in TAC-TP mode should preserve T."""
+        ltac = LearnableTAC(3, 16, 3, chunk_size=4, preserve_temporal=True, padding=1)
+        state = ltac.init_state(2, (8, 8))
+        x = mx.ones((16, 2, 8, 8, 3))
+        spk, _ = ltac(x, state)
+        mx.eval(spk)
+        assert list(spk.shape) == [16, 2, 8, 8, 16]
+
+    def test_output_shape_standard(self):
+        """L-TAC in standard mode should reduce T to T/K."""
+        ltac = LearnableTAC(3, 16, 3, chunk_size=4, preserve_temporal=False, padding=1)
+        state = ltac.init_state(2, (8, 8))
+        x = mx.ones((16, 2, 8, 8, 3))
+        spk, _ = ltac(x, state)
+        mx.eval(spk)
+        assert list(spk.shape) == [4, 2, 8, 8, 16]
+
+    def test_initial_weights_match_exponential(self):
+        """Initial softmax(logits) should approximate normalized beta^{K-1-k}."""
+        beta = 0.9
+        K = 4
+        ltac = LearnableTAC(3, 16, 3, beta=beta, chunk_size=K, padding=1)
+        weights = ltac.agg_weights
+        mx.eval(weights)
+
+        # Expected exponential weights (normalized)
+        raw = [beta ** (K - 1 - k) for k in range(K)]
+        total = sum(raw)
+        expected = [r / total for r in raw]
+
+        for i in range(K):
+            assert abs(float(weights[i]) - expected[i]) < 0.01, \
+                f"Weight {i}: got {float(weights[i]):.4f}, expected {expected[i]:.4f}"
+
+    def test_gradient_flows_to_logits(self):
+        """Aggregation weights should receive gradients."""
+        ltac = LearnableTAC(2, 8, 3, chunk_size=2, preserve_temporal=True, padding=1)
+        state = ltac.init_state(2, (4, 4))
+        x = mx.random.normal((8, 2, 4, 4, 2))
+
+        def loss_fn(model, x, s):
+            spk, _ = model(x, s)
+            return mx.mean(spk)
+
+        loss, grads = nn.value_and_grad(ltac, loss_fn)(ltac, x, state)
+        mx.eval(loss, grads)
+        assert 'agg_logits' in grads
+        grad_norm = float(mx.sqrt(mx.sum(grads['agg_logits'] ** 2)).item())
+        assert grad_norm > 0, "agg_logits should have nonzero gradient"
+
+    def test_conv_calls_count(self):
+        ltac = LearnableTAC(3, 16, 3, chunk_size=4, padding=1)
+        assert ltac.conv_calls(16) == 4
+        assert ltac.conv_calls(10) == 3
+
+    def test_non_divisible_T_preserve(self):
+        """Non-divisible T in preserve mode should still preserve T."""
+        ltac = LearnableTAC(3, 16, 3, chunk_size=4, preserve_temporal=True, padding=1)
+        state = ltac.init_state(2, (8, 8))
+        x = mx.ones((10, 2, 8, 8, 3))
+        spk, _ = ltac(x, state)
+        mx.eval(spk)
+        assert spk.shape[0] == 10
 
 
 # ──────────────────────────────────────────────────────────────────────

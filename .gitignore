@@ -11,3 +11,10 @@ paper_v2/
 paper_v3/
 neurips2026_paper/
 CLAUDE.md
+experiments/
+figures/
+docs/
+data/
+memory.md
+PyPI-Recovery-Codes-*
+*.zip
