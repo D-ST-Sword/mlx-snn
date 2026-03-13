@@ -6,7 +6,7 @@ mlx-snn aims to provide an efficient, research-friendly SNN framework that lever
 
 [![PyPI version](https://img.shields.io/pypi/v/mlx-snn.svg)](https://pypi.org/project/mlx-snn/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
 ## Why mlx-snn?
 
@@ -203,4 +203,4 @@ Contributions are welcome! Please open an issue or pull request on [GitHub](http
 
 ## License
 
-MIT
+GPL-3.0
