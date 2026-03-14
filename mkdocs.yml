@@ -77,6 +77,7 @@ nav:
       - Functional API: api/functional.md
       - Layers: api/layers.md
       - Operators: api/operators.md
+      - Liquid State Machine: api/liquid.md
       - Training: api/training.md
       - Datasets: api/datasets.md
       - Utilities: api/utils.md

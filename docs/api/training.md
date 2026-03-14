@@ -6,6 +6,14 @@ Training utilities for SNN models, including BPTT forward pass helpers.
 
 ::: mlxsnn.training.bptt.bptt_forward
 
+## Compiled Forward Pass
+
+Per-timestep compilation via `mx.compile` for faster inference.
+
+::: mlxsnn.training.compile.compiled_step
+
+::: mlxsnn.training.compile.compiled_forward
+
 ## Training Pattern
 
 The standard training pattern with mlx-snn:
