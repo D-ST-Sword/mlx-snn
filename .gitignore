@@ -13,7 +13,8 @@ neurips2026_paper/
 CLAUDE.md
 experiments/
 figures/
-docs/
+docs/theorems.tex
+site/
 data/
 memory.md
 PyPI-Recovery-Codes-*

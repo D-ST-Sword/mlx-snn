@@ -1,0 +1,85 @@
+site_name: mlx-snn
+site_description: Spiking Neural Network library built natively on Apple MLX
+site_url: https://d-st-sword.github.io/mlx-snn/
+repo_url: https://github.com/D-ST-Sword/mlx-snn
+repo_name: D-ST-Sword/mlx-snn
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - content.code.annotate
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            heading_level: 3
+            show_signature_annotations: true
+            separate_signature: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Migration from snnTorch: migration.md
+  - API Reference:
+      - Overview: api/index.md
+      - Neurons: api/neurons.md
+      - Surrogate Gradients: api/surrogate.md
+      - Encoding: api/encoding.md
+      - Functional API: api/functional.md
+      - Layers: api/layers.md
+      - Operators: api/operators.md
+      - Training: api/training.md
+      - Datasets: api/datasets.md
+      - Utilities: api/utils.md
+      - NIR Interop: api/nir.md
+  - Examples: examples.md
+  - Changelog: changelog.md
