@@ -4,6 +4,7 @@
 
 mlx-snn aims to provide an efficient, research-friendly SNN framework that leverages MLX's unified memory architecture and lazy evaluation. Whether you're exploring neuron dynamics, training classifiers with surrogate gradients, or exchanging models via [NIR](https://github.com/neuromorphs/NIR), mlx-snn offers a clean, Pythonic API that integrates naturally into the MLX ecosystem.
 
+[![CI](https://github.com/D-ST-Sword/mlx-snn/actions/workflows/ci.yml/badge.svg)](https://github.com/D-ST-Sword/mlx-snn/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/mlx-snn.svg)](https://pypi.org/project/mlx-snn/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
@@ -172,9 +173,11 @@ mlxsnn/
 - [x] **v0.1** — Core neurons (LIF, IF), surrogate gradients, rate/latency encoding
 - [x] **v0.2** — Extended neurons (Izhikevich, ALIF, Synaptic, Alpha), EEG encoder, delta encoding
 - [x] **v0.3** — NIR interoperability (export/import)
-- [x] **v0.4** — Recurrent neurons (RLeaky, RSynaptic), learnable thresholds, expanded surrogates and losses
-- [ ] **v0.5** — Liquid State Machine, reservoir topology, `mx.compile` optimization
-- [ ] **v1.0** — Full documentation, comprehensive benchmarks, neuromorphic dataset loaders
+- [x] **v0.4** — Recurrent neurons, conv/pooling layers, neuromorphic datasets, TAC operators
+- [x] **v0.5** — Direct/repeat encoding, activity regularization, SpikeDropout, visualization, SHD dataset
+- [ ] **v0.6** — CI/CD, API documentation site, complete examples
+- [ ] **v0.7** — Liquid State Machine, reservoir topology, `mx.compile` optimization
+- [ ] **v1.0** — Full documentation, comprehensive benchmarks, JOSS paper
 
 ## Publications
 

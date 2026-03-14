@@ -1,28 +1,45 @@
 [project]
 name = "mlx-snn"
-version = "0.4.0"
+version = "0.5.0"
 description = "Spiking Neural Network library built natively on Apple MLX"
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.9"
 authors = [
-    {name = "Qie"},
+    {name = "Qie", email = "qie@mlx-snn.dev"},
 ]
-keywords = ["spiking-neural-network", "mlx", "apple-silicon", "neuromorphic"]
+keywords = [
+    "spiking-neural-network", "mlx", "apple-silicon", "neuromorphic",
+    "surrogate-gradient", "event-driven", "brain-inspired",
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
     "mlx>=0.10.0",
+    "numpy",
 ]
+
+[project.urls]
+Homepage = "https://github.com/D-ST-Sword/mlx-snn"
+Repository = "https://github.com/D-ST-Sword/mlx-snn"
+Issues = "https://github.com/D-ST-Sword/mlx-snn/issues"
+Changelog = "https://github.com/D-ST-Sword/mlx-snn/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "pytest-xdist",
+    "ruff",
 ]
 nir = [
     "nir>=1.0",
@@ -32,6 +49,7 @@ viz = [
 ]
 datasets = [
     "aedat",
+    "h5py",
 ]
 
 [build-system]
@@ -43,3 +61,11 @@ include = ["mlxsnn*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501", "F401", "E741"]
