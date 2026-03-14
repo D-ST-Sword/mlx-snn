@@ -5,6 +5,15 @@ All notable changes to mlx-snn are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-03-14
+
+### Added
+- **Liquid State Machine** — `LiquidReservoir`, `LSM` with trainable readout
+- **Reservoir topologies** — Erdos-Renyi, Watts-Strogatz small-world, Barabasi-Albert scale-free
+- **Dale's law** enforcement — excitatory/inhibitory neuron balance with configurable ratio
+- **`mx.compile` optimization** — `compiled_step`, `compiled_forward` for per-timestep compilation
+- LSM API docs and topology generators documentation
+
 ## [0.6.0] - 2026-03-14
 
 ### Added
@@ -77,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **BPTT helper** — `bptt_forward`
 - MNIST quickstart example
 
+[0.7.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.3.0...v0.4.0

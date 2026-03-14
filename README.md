@@ -176,8 +176,8 @@ mlxsnn/
 - [x] **v0.3** — NIR interoperability (export/import)
 - [x] **v0.4** — Recurrent neurons, conv/pooling layers, neuromorphic datasets, TAC operators
 - [x] **v0.5** — Direct/repeat encoding, activity regularization, SpikeDropout, visualization, SHD dataset
-- [ ] **v0.6** — CI/CD, API documentation site, complete examples
-- [ ] **v0.7** — Liquid State Machine, reservoir topology, `mx.compile` optimization
+- [x] **v0.6** — CI/CD, API documentation site, complete examples
+- [x] **v0.7** — Liquid State Machine, reservoir topology, `mx.compile` optimization
 - [ ] **v1.0** — Full documentation, comprehensive benchmarks, JOSS paper
 
 ## Publications
