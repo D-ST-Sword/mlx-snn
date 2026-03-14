@@ -14,7 +14,7 @@ import pytest
 import mlx.core as mx
 import mlx.nn as nn
 
-import nir
+nir = pytest.importorskip("nir")
 
 from mlxsnn.neurons.lif import Leaky
 from mlxsnn.neurons.if_neuron import IF
