@@ -26,10 +26,17 @@ from mlxsnn.datasets.utils import (
     create_dataloader,
 )
 
+# SHD requires h5py (optional)
+try:
+    from mlxsnn.datasets.shd import SHDDataset
+except ImportError:
+    pass
+
 __all__ = [
     "DVSGestureDataset",
     "CIFAR10DVSDataset",
     "NMNISTDataset",
+    "SHDDataset",
     "events_to_frames",
     "resize_frames",
     "EventDataloader",

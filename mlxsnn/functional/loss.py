@@ -141,3 +141,70 @@ def spike_count(spk_out: mx.array) -> mx.array:
         Total spike count ``[batch, ...]``.
     """
     return mx.sum(spk_out, axis=0)
+
+
+def activity_reg_loss(
+    spk_out: mx.array,
+    target_rate: float = 0.1,
+) -> mx.array:
+    """MSE between mean firing rate and a target rate.
+
+    Encourages the network to maintain a desired average firing rate,
+    preventing dead neurons (rate = 0) or saturation (rate = 1).
+
+    Args:
+        spk_out: Output spikes ``[T, batch, ...]``.
+        target_rate: Desired mean firing rate in [0, 1].
+
+    Returns:
+        Scalar loss value.
+
+    Examples:
+        >>> import mlx.core as mx
+        >>> spk = mx.ones((10, 4, 5)) * 0.5
+        >>> loss = activity_reg_loss(spk, target_rate=0.1)
+    """
+    mean_rate = mx.mean(spk_out, axis=0)  # [batch, ...]
+    return mx.mean((mean_rate - target_rate) ** 2)
+
+
+def l1_spike_loss(spk_out: mx.array) -> mx.array:
+    """L1 penalty on spike counts (sparsity regularization).
+
+    Penalizes the total number of spikes, encouraging sparse
+    spiking activity across the network.
+
+    Args:
+        spk_out: Output spikes ``[T, batch, ...]``.
+
+    Returns:
+        Scalar loss value.
+
+    Examples:
+        >>> import mlx.core as mx
+        >>> spk = mx.ones((10, 4, 5))
+        >>> loss = l1_spike_loss(spk)
+    """
+    counts = mx.sum(spk_out, axis=0)  # [batch, ...]
+    return mx.mean(mx.abs(counts))
+
+
+def l2_spike_loss(spk_out: mx.array) -> mx.array:
+    """L2 penalty on spike counts.
+
+    Penalizes the squared spike count per neuron, providing a
+    smoother gradient than L1 for firing rate control.
+
+    Args:
+        spk_out: Output spikes ``[T, batch, ...]``.
+
+    Returns:
+        Scalar loss value.
+
+    Examples:
+        >>> import mlx.core as mx
+        >>> spk = mx.ones((10, 4, 5))
+        >>> loss = l2_spike_loss(spk)
+    """
+    counts = mx.sum(spk_out, axis=0)  # [batch, ...]
+    return mx.mean(counts ** 2)

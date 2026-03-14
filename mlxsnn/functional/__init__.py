@@ -16,4 +16,7 @@ from mlxsnn.functional.loss import (
     mse_membrane_loss,
     spike_rate,
     spike_count,
+    activity_reg_loss,
+    l1_spike_loss,
+    l2_spike_loss,
 )

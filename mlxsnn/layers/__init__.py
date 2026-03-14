@@ -7,5 +7,6 @@ layers use MLX's NHWC format: ``(B, H, W, C)``.
 
 from mlxsnn.layers._factory import create_neuron
 from mlxsnn.layers.conv import SpikingConv2d
+from mlxsnn.layers.dropout import SpikeDropout
 from mlxsnn.layers.flatten import SpikingFlatten
 from mlxsnn.layers.pooling import SpikingAvgPool2d, SpikingMaxPool2d

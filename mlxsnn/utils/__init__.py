@@ -6,6 +6,12 @@ import mlx.core as mx
 
 from mlxsnn.neurons.base import SpikingNeuron
 
+# Visualization is optional (requires matplotlib)
+try:
+    from mlxsnn.utils.visualization import plot_raster, plot_membrane, plot_firing_rate
+except ImportError:
+    pass
+
 
 def reset_states(model) -> None:
     """Reset all stateful neuron layers in a model.
