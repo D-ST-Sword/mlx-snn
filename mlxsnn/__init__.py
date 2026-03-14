@@ -9,7 +9,7 @@ Examples:
     >>> state = lif.init_state(32, 128)
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 # Neuron models
 from mlxsnn.neurons import (

@@ -5,6 +5,19 @@ All notable changes to mlx-snn are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-03-14
+
+### Added
+- **API documentation site** — MkDocs with Material theme, auto-generated from docstrings via mkdocstrings
+- **GitHub Pages deployment** — automatic docs deployment on push to main
+- **CI/CD pipelines** — GitHub Actions for linting (ruff) and testing (pytest, Python 3.9/3.11/3.12)
+- **PyPI Trusted Publisher** — automated release workflow on git tags
+- **Complete examples** — 6 runnable examples (quickstart, conv SNN, TAC benchmark, visualization, SHD audio, custom neuron)
+
+### Changed
+- Enhanced project metadata — classifiers, keywords, project URLs, ruff config
+- Added CHANGELOG.md following Keep a Changelog format
+
 ## [0.5.0] - 2026-03-14
 
 ### Added
@@ -64,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - **BPTT helper** — `bptt_forward`
 - MNIST quickstart example
 
+[0.6.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/D-ST-Sword/mlx-snn/compare/v0.2.1...v0.3.0
