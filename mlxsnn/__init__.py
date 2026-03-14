@@ -64,6 +64,9 @@ try:
 except (ImportError, NameError):
     pass
 
+# Liquid State Machine
+from mlxsnn.liquid import LiquidReservoir, LSM
+
 # Mathematically-principled Conv SNN operators
 from mlxsnn.operators import (
     TemporalAggregatedConv,
