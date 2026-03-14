@@ -40,7 +40,6 @@ import numpy as np
 
 from mlxsnn.datasets.utils import events_to_frames, resize_frames
 
-
 # Class name -> integer label mapping (alphabetical order, matching tonic)
 _CLASS_NAMES: List[str] = [
     "airplane",

@@ -12,72 +12,100 @@ Examples:
 __version__ = "0.7.0"
 
 # Neuron models
+# Spike encoding
+from mlxsnn.encoding import (
+    EEGEncoder,
+    delta_encode,
+    direct_encode,
+    latency_encode,
+    rate_encode,
+    repeat_encode,
+)
+
+# Functional API
+from mlxsnn.functional import (
+    activity_reg_loss,
+    ce_count_loss,
+    ce_rate_loss,
+    fire,
+    if_step,
+    l1_spike_loss,
+    l2_spike_loss,
+    lif_step,
+    membrane_loss,
+    mse_count_loss,
+    mse_membrane_loss,
+    rate_coding_loss,
+    reset_subtract,
+    reset_zero,
+    spike_count,
+    spike_rate,
+)
+
+# Composite layers (conv, pooling, flatten)
+from mlxsnn.layers import (
+    SpikeDropout,
+    SpikingAvgPool2d,
+    SpikingConv2d,
+    SpikingFlatten,
+    SpikingMaxPool2d,
+    create_neuron,
+)
 from mlxsnn.neurons import (
-    SpikingNeuron, Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha,
-    RLeaky, RSynaptic,
+    ALIF,
+    IF,
+    Alpha,
+    Izhikevich,
+    Leaky,
+    RLeaky,
+    RSynaptic,
+    SpikingNeuron,
+    Synaptic,
 )
 
 # Surrogate gradient functions
 from mlxsnn.surrogate import get_surrogate
 
-# Spike encoding
-from mlxsnn.encoding import (
-    rate_encode, latency_encode, delta_encode, direct_encode, repeat_encode,
-    EEGEncoder,
-)
-
-# Functional API
-from mlxsnn.functional import lif_step, if_step, fire, reset_subtract, reset_zero
-from mlxsnn.functional import rate_coding_loss, membrane_loss, mse_count_loss
-from mlxsnn.functional import ce_rate_loss, ce_count_loss, mse_membrane_loss
-from mlxsnn.functional import spike_rate, spike_count
-from mlxsnn.functional import activity_reg_loss, l1_spike_loss, l2_spike_loss
-
-# Composite layers (conv, pooling, flatten)
-from mlxsnn.layers import (
-    SpikingConv2d, SpikingMaxPool2d, SpikingAvgPool2d, SpikingFlatten,
-    SpikeDropout, create_neuron,
-)
-
 # Training utilities
-from mlxsnn.training import bptt_forward, compiled_step, compiled_forward
+from mlxsnn.training import bptt_forward, compiled_forward, compiled_step
 
 # Utility functions
 from mlxsnn.utils import init_states
 
 # Visualization (optional, requires matplotlib)
 try:
-    from mlxsnn.utils.visualization import plot_raster, plot_membrane, plot_firing_rate
+    from mlxsnn.utils.visualization import plot_firing_rate, plot_membrane, plot_raster
 except ImportError:
     pass
 
 # Dataset loaders
 from mlxsnn.datasets import (
-    DVSGestureDataset,
     CIFAR10DVSDataset,
-    NMNISTDataset,
+    DVSGestureDataset,
     EventDataloader,
+    NMNISTDataset,
     create_dataloader,
 )
+
 try:
     from mlxsnn.datasets import SHDDataset
 except (ImportError, NameError):
     pass
 
 # Liquid State Machine
-from mlxsnn.liquid import LiquidReservoir, LSM
+from mlxsnn.liquid import LSM, LiquidReservoir
 
 # Mathematically-principled Conv SNN operators
 from mlxsnn.operators import (
-    TemporalAggregatedConv,
     FourierTemporalConv,
     InfoMaxSpikeConv,
+    TemporalAggregatedConv,
     TemporalCollapseConv,
 )
 
 # NIR interoperability (optional dependency)
 try:
     from mlxsnn.nir_export import export_to_nir
-    from mlxsnn.nir_import import import_from_nir, NIRSequential
+    from mlxsnn.nir_import import NIRSequential, import_from_nir
 except ImportError:
     pass

@@ -4,8 +4,9 @@ Low-level operations for spike generation (with surrogate gradients)
 and membrane reset. These are building blocks for neuron models.
 """
 
-import mlx.core as mx
 from typing import Callable
+
+import mlx.core as mx
 
 
 def fire(

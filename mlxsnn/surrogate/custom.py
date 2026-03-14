@@ -1,7 +1,8 @@
 """User-definable surrogate gradient functions."""
 
-import mlx.core as mx
 from typing import Callable
+
+import mlx.core as mx
 
 
 def custom_surrogate(approx_fn: Callable[[mx.array], mx.array]):

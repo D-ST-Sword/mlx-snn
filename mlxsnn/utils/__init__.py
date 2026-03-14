@@ -8,7 +8,7 @@ from mlxsnn.neurons.base import SpikingNeuron
 
 # Visualization is optional (requires matplotlib)
 try:
-    from mlxsnn.utils.visualization import plot_raster, plot_membrane, plot_firing_rate
+    from mlxsnn.utils.visualization import plot_firing_rate, plot_membrane, plot_raster
 except ImportError:
     pass
 

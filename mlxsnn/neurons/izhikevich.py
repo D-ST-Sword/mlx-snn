@@ -24,7 +24,6 @@ import mlx.core as mx
 
 from mlxsnn.neurons.base import SpikingNeuron
 
-
 PRESETS: dict[str, dict[str, float]] = {
     "RS": {"a": 0.02, "b": 0.2, "c": -65.0, "d": 8.0},
     "IB": {"a": 0.02, "b": 0.2, "c": -55.0, "d": 4.0},

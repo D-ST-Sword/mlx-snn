@@ -10,8 +10,8 @@ from __future__ import annotations
 import mlx.core as mx
 import mlx.nn as nn
 
-from mlxsnn.neurons.base import SpikingNeuron
 from mlxsnn.layers._factory import create_neuron
+from mlxsnn.neurons.base import SpikingNeuron
 
 
 class SpikingConv2d(nn.Module):

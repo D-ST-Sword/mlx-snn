@@ -35,8 +35,8 @@ import math
 import mlx.core as mx
 import mlx.nn as nn
 
-from mlxsnn.neurons.base import SpikingNeuron
 from mlxsnn.layers._factory import create_neuron
+from mlxsnn.neurons.base import SpikingNeuron
 
 
 def binary_entropy(rho: mx.array) -> mx.array:
@@ -202,9 +202,6 @@ class InfoMaxSpikeConv(nn.Module):
             Scalar loss value.
         """
         gates = self._get_gates()
-
-        # Effective number of output channels.
-        effective_c_out = mx.sum(gates)
 
         # Per-channel output entropy (averaged across channels).
         rho_out = mx.clip(self._firing_rate_out, 1e-6, 1.0 - 1e-6)

@@ -21,10 +21,9 @@ import warnings
 from collections import deque
 from typing import Dict, List, Tuple
 
-import numpy as np
-
 import mlx.core as mx
 import mlx.nn as nn
+import numpy as np
 
 try:
     import nir
@@ -34,10 +33,10 @@ except ImportError:
         "Install with: pip install mlx-snn[nir]"
     )
 
-from mlxsnn.neurons.lif import Leaky
 from mlxsnn.neurons.if_neuron import IF
+from mlxsnn.neurons.lif import Leaky
 from mlxsnn.neurons.synaptic import Synaptic
-from mlxsnn.nir_utils import tau_to_beta, numpy_to_mx, DEFAULT_DT
+from mlxsnn.nir_utils import DEFAULT_DT, numpy_to_mx, tau_to_beta
 
 
 def _topological_sort(

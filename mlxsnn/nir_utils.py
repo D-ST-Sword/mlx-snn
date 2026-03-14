@@ -13,10 +13,8 @@ where dt is the simulation timestep (default 1e-4, matching snnTorch).
 
 from __future__ import annotations
 
-import numpy as np
-
 import mlx.core as mx
-
+import numpy as np
 
 DEFAULT_DT = 1e-4
 

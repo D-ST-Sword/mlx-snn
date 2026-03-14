@@ -6,8 +6,8 @@ any state management — suitable for use with mx.compile and vmap.
 
 import mlx.core as mx
 
-from mlxsnn.surrogate import get_surrogate
 from mlxsnn.functional.spike_ops import fire, reset_subtract, reset_zero
+from mlxsnn.surrogate import get_surrogate
 
 
 def lif_step(

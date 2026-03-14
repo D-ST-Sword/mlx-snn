@@ -8,12 +8,12 @@ Provides reservoir computing with spiking neurons:
 
 from __future__ import annotations
 
-from mlxsnn.liquid.reservoir import LiquidReservoir
 from mlxsnn.liquid.lsm import LSM
+from mlxsnn.liquid.reservoir import LiquidReservoir
 from mlxsnn.liquid.topology import (
     erdos_renyi,
-    small_world,
     scale_free,
+    small_world,
 )
 
 __all__ = [

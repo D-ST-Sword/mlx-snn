@@ -16,14 +16,14 @@ Utilities:
       batch iterator (no PyTorch dependency)
 """
 
-from mlxsnn.datasets.dvs_gesture import DVSGestureDataset
 from mlxsnn.datasets.cifar10dvs import CIFAR10DVSDataset
+from mlxsnn.datasets.dvs_gesture import DVSGestureDataset
 from mlxsnn.datasets.nmnist import NMNISTDataset
 from mlxsnn.datasets.utils import (
-    events_to_frames,
-    resize_frames,
     EventDataloader,
     create_dataloader,
+    events_to_frames,
+    resize_frames,
 )
 
 # SHD requires h5py (optional)

@@ -23,9 +23,8 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-import numpy as np
-
 import mlx.nn as nn
+import numpy as np
 
 try:
     import nir
@@ -35,10 +34,10 @@ except ImportError:
         "Install with: pip install mlx-snn[nir]"
     )
 
-from mlxsnn.neurons.lif import Leaky
 from mlxsnn.neurons.if_neuron import IF
+from mlxsnn.neurons.lif import Leaky
 from mlxsnn.neurons.synaptic import Synaptic
-from mlxsnn.nir_utils import beta_to_tau, beta_to_r, mx_to_numpy, DEFAULT_DT
+from mlxsnn.nir_utils import DEFAULT_DT, beta_to_r, beta_to_tau, mx_to_numpy
 
 
 def _convert_linear(module: nn.Linear) -> nir.NIRNode:

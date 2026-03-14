@@ -8,10 +8,10 @@ References:
     Learning in Spiking Neural Networks. IEEE Signal Processing Magazine.
 """
 
-from mlxsnn.surrogate.fast_sigmoid import fast_sigmoid_surrogate
 from mlxsnn.surrogate.arctan import arctan_surrogate
-from mlxsnn.surrogate.straight_through import straight_through_surrogate
+from mlxsnn.surrogate.fast_sigmoid import fast_sigmoid_surrogate
 from mlxsnn.surrogate.sigmoid import sigmoid_surrogate
+from mlxsnn.surrogate.straight_through import straight_through_surrogate
 from mlxsnn.surrogate.triangular import triangular_surrogate
 
 _SURROGATE_REGISTRY = {

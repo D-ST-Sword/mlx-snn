@@ -231,7 +231,6 @@ class FourierTemporalConv(nn.Module):
 
         # H(omega) = (b0 + b1 * exp(-j*omega)) / (1 - a1*exp(-j*omega) - a2*exp(-j*2*omega))
         # Compute numerator and denominator magnitudes.
-        ej = mx.exp(-1j * omega)          # (N,) complex — not available in MLX
         # MLX doesn't have complex numbers, compute magnitude directly.
         # |H|^2 = |numerator|^2 / |denominator|^2
 
