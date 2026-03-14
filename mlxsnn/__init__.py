@@ -40,7 +40,7 @@ from mlxsnn.layers import (
 )
 
 # Training utilities
-from mlxsnn.training import bptt_forward
+from mlxsnn.training import bptt_forward, compiled_step, compiled_forward
 
 # Utility functions
 from mlxsnn.utils import init_states
