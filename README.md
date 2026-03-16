@@ -64,8 +64,8 @@ print("Output membrane:", state["mem"].shape)  # (8, 10)
 ### Surrogate Gradients
 
 All neuron models support differentiable training via surrogate gradients:
-- **Fast Sigmoid** — default, good balance of speed and accuracy
-- **Arctan** — smoother gradient landscape
+- **Arctan** — default, matches snnTorch's default for stable BPTT convergence
+- **Fast Sigmoid** — rational approximation with heavier tails
 - **Sigmoid** — standard logistic sigmoid derivative
 - **Triangular (Tent)** — localized, compact support near threshold
 - **Straight-Through Estimator** — simplest, unit gradient everywhere
@@ -122,22 +122,47 @@ out, state = model(x, state)
 
 Supported conversions: `nn.Linear` <-> `nir.Affine`/`nir.Linear`, `Leaky` <-> `nir.LIF`, `IF` <-> `nir.IF`, `Synaptic` <-> `nir.CubaLIF`.
 
-## Benchmark Highlights
+## Benchmarks
 
-Experiments on MNIST (784-128-10 SNN, 25 timesteps, 5 seeds) on Apple M3 Max, compared with snnTorch on NVIDIA V100:
+All experiments use identical hyperparameters: Adam (LR=1e-3), Poisson rate encoding, T=25 timesteps, batch size 128, 5 random seeds, 10 epochs. Full scripts in [`benchmarks/`](benchmarks/).
 
-| Configuration | mlx-snn (M3 Max) | snnTorch (V100) | Speed (mlx-snn) | Speed (snnTorch) |
-|---------------|-------------------|-----------------|------------------|------------------|
-| Leaky (LIF) | 96.3% | 97.3% | **5.7 s/epoch** | 20.9 s/epoch |
-| Synaptic | 94.4% | 95.8% | 6.1 s/epoch | 25.2 s/epoch |
-| RLeaky (V=0.1, learn) | 91.6% | 68.1% | 6.8 s/epoch | 25.7 s/epoch |
-| RSynaptic (V=0.1, learn) | 89.0% | 52.2% | 7.3 s/epoch | 29.2 s/epoch |
-| Fast Sigmoid surrogate | 96.3% | 96.7% | 5.7 s/epoch | 20.9 s/epoch |
-| Triangular (Tent) surrogate | 86.0% | 50.8% | 10.9 s/epoch | 20.9 s/epoch |
+### Training Accuracy (identical within noise)
 
-mlx-snn achieves ~3.7-4.1x faster training per epoch on the M3 Max compared to the V100, while maintaining competitive accuracy. Recurrent neurons with learnable weights significantly outperform snnTorch's default configurations.
+| Task | mlx-snn (M3 Max) | snnTorch (V100) |
+|------|-------------------|-----------------|
+| FC SNN on MNIST | **97.0%** | 97.2% |
+| FC SNN on FashionMNIST | **85.2%** | 85.2% |
+| LSM Reservoir on MNIST | 92.4% | **93.6%** |
 
-For full results, see our benchmarking paper and the [experiments/](experiments/) directory.
+### Training Speed
+
+| Task | mlx-snn (M3 Max) | snnTorch (V100) | Speedup |
+|------|-------------------|-----------------|---------|
+| FC SNN (784→128→10) | **7.4 s/epoch** | 19.4 s/epoch | **2.6x** |
+| LSM Reservoir (500 neurons) | **3.2 s/epoch** | 5.7 s/epoch | **1.8x** |
+
+### Inference Throughput (samples/sec, T=25)
+
+| Model | Batch | mlx-snn (M3 Max) | snnTorch (V100) | Speedup |
+|-------|-------|-------------------|-----------------|---------|
+| FC-SNN | 128 | **23,875** | 6,552 | **3.6x** |
+| FC-SNN | 512 | **95,735** | 26,058 | **3.7x** |
+| Conv-SNN | 128 | **6,671** | 3,859 | **1.7x** |
+| Conv-SNN | 512 | **6,434** | 4,252 | **1.5x** |
+
+### `mx.compile` Acceleration
+
+| Mode | Time (25-step forward) |
+|------|----------------------|
+| Uncompiled | 2.72 ms |
+| Compiled | **0.92 ms** |
+| **Speedup** | **2.9x** |
+
+### Power Efficiency
+
+The M3 Max (TDP ~45 W) delivers 2.6–3.7x faster SNN training/inference than the V100 (TDP 300 W), yielding an estimated **17–25x better energy efficiency** (performance per watt).
+
+For detailed results and reproduction scripts, see [`benchmarks/`](benchmarks/) and our [benchmarking paper](https://arxiv.org/abs/2603.03529).
 
 ## Migrating from snnTorch
 
@@ -161,11 +186,16 @@ Key differences:
 
 ```
 mlxsnn/
-├── neurons/       # SpikingNeuron base, Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha, RLeaky, RSynaptic
-├── surrogate/     # fast_sigmoid, arctan, sigmoid, triangular, straight_through, custom
-├── encoding/      # rate, latency, delta, EEG encoder
-├── functional/    # Stateless pure functions (lif_step, if_step, fire, reset)
-├── training/      # BPTT helpers, loss functions
+├── neurons/       # Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha, RLeaky, RSynaptic
+├── surrogate/     # arctan, fast_sigmoid, sigmoid, triangular, straight_through, custom
+├── encoding/      # rate, latency, delta, direct, repeat, EEG encoder
+├── functional/    # Stateless pure functions, 9 loss functions, metrics
+├── layers/        # SpikingConv2d, MaxPool2d, AvgPool2d, Flatten, SpikeDropout
+├── operators/     # TAC, TAC-TP, L-TAC, FTC, IMC, TCC
+├── liquid/        # LiquidReservoir, LSM, topology generators
+├── datasets/      # DVSGesture, CIFAR10DVS, NMNIST, SHD
+├── training/      # BPTT helpers, mx.compile wrappers
+├── utils/         # Visualization, state management
 └── nir_*.py       # NIR export/import utilities
 ```
 
