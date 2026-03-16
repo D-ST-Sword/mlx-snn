@@ -1,14 +1,15 @@
-"""Spiking Heidelberg Digits (SHD) dataset loader.
+"""Spiking Speech Commands (SSC) dataset loader.
 
-Loads the SHD dataset from HDF5 files and bins spike times into dense
-frame tensors.  The SHD dataset contains spoken digits (0-9) from 12
-speakers, encoded as spike times across 700 input channels.
+Loads the SSC dataset from HDF5 files and bins spike times into dense
+frame tensors.  The SSC dataset contains spoken commands encoded as spike
+times across 700 input channels, forming a 35-class classification task.
 
 Dataset details:
     - Channels: 700 (cochlea-like filterbank)
-    - Classes: 20 (digits 0-9 in English and German)
-    - Training samples: ~8,156
-    - Test samples: ~2,264
+    - Classes: 35 (speech commands)
+    - Training samples: ~75,466
+    - Validation samples: ~9,981
+    - Test samples: ~20,382
     - File format: HDF5 with ``spikes/times``, ``spikes/units``, ``labels``
 
 References:
@@ -33,21 +34,22 @@ def _ensure_h5py():
         return h5py
     except ImportError:
         raise ImportError(
-            "h5py is required for loading SHD datasets. "
+            "h5py is required for loading SSC datasets. "
             "Install it with: pip install mlx-snn[datasets]"
         )
 
 
-class SHDDataset:
-    """Spiking Heidelberg Digits dataset loader.
+class SSCDataset:
+    """Spiking Speech Commands dataset loader.
 
     Loads spike times from HDF5 files and bins them into dense
     binary tensors of shape ``(T, 700)``.
 
     Args:
-        root: Path to directory containing ``shd_train.h5`` and
-            ``shd_test.h5``.
-        train: If ``True``, load the training split; otherwise test.
+        root: Path to directory containing ``ssc_train.h5``,
+            ``ssc_valid.h5``, and ``ssc_test.h5``.
+        split: Which split to load: ``'train'``, ``'valid'``, or
+            ``'test'``.
         num_steps: Number of temporal bins (timesteps T).
         max_time: Maximum spike time in seconds.  Spikes after this
             time are discarded.  If ``None``, uses the maximum time
@@ -57,33 +59,37 @@ class SHDDataset:
             conversion to ``mx.array``.
 
     Examples:
-        >>> from mlxsnn.datasets import SHDDataset
-        >>> ds = SHDDataset("./data/shd", train=True, num_steps=100)
+        >>> from mlxsnn.datasets import SSCDataset
+        >>> ds = SSCDataset("./data/ssc", split="train", num_steps=100)
         >>> spikes, label = ds[0]
         >>> spikes.shape
         [100, 700]
     """
 
-    NUM_CLASSES = 20
+    NUM_CLASSES = 35
 
     def __init__(
         self,
         root: str,
-        train: bool = True,
+        split: str = "train",
         num_steps: int = 100,
         max_time: Optional[float] = None,
         num_units: int = 700,
         transform: Optional[Callable] = None,
     ):
+        if split not in ("train", "valid", "test"):
+            raise ValueError(
+                f"split must be 'train', 'valid', or 'test', got '{split}'"
+            )
         self.root = root
-        self.train = train
+        self.split = split
         self.num_steps = num_steps
         self.max_time = max_time
         self.num_units = num_units
         self.transform = transform
 
         h5py = _ensure_h5py()
-        fname = "shd_train.h5" if train else "shd_test.h5"
+        fname = f"ssc_{split}.h5"
         filepath = os.path.join(root, fname)
 
         with h5py.File(filepath, "r") as f:
@@ -165,8 +171,7 @@ class SHDDataset:
         return frame
 
     def __repr__(self) -> str:
-        split = "train" if self.train else "test"
         return (
-            f"SHDDataset(split={split}, samples={len(self)}, "
+            f"SSCDataset(split={self.split}, samples={len(self)}, "
             f"num_steps={self.num_steps}, num_units={self.num_units})"
         )

@@ -26,9 +26,14 @@ from mlxsnn.datasets.utils import (
     resize_frames,
 )
 
-# SHD requires h5py (optional)
+# SHD/SSC require h5py (optional)
 try:
     from mlxsnn.datasets.shd import SHDDataset
+except ImportError:
+    pass
+
+try:
+    from mlxsnn.datasets.ssc import SSCDataset
 except ImportError:
     pass
 
@@ -37,6 +42,7 @@ __all__ = [
     "CIFAR10DVSDataset",
     "NMNISTDataset",
     "SHDDataset",
+    "SSCDataset",
     "events_to_frames",
     "resize_frames",
     "EventDataloader",

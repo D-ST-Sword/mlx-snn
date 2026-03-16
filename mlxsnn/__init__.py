@@ -57,6 +57,7 @@ from mlxsnn.neurons import (
     Alpha,
     Izhikevich,
     Leaky,
+    MSLeaky,
     RLeaky,
     RSynaptic,
     SpikingNeuron,
@@ -67,7 +68,13 @@ from mlxsnn.neurons import (
 from mlxsnn.surrogate import get_surrogate
 
 # Training utilities
-from mlxsnn.training import bptt_forward, compiled_forward, compiled_step
+from mlxsnn.training import (
+    bptt_forward,
+    chunked_bptt_forward,
+    compiled_forward,
+    compiled_step,
+    detach_state,
+)
 
 # Utility functions
 from mlxsnn.utils import init_states
@@ -89,6 +96,11 @@ from mlxsnn.datasets import (
 
 try:
     from mlxsnn.datasets import SHDDataset
+except (ImportError, NameError):
+    pass
+
+try:
+    from mlxsnn.datasets import SSCDataset
 except (ImportError, NameError):
     pass
 

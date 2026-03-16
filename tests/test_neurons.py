@@ -2,9 +2,10 @@
 
 import mlx
 import mlx.core as mx
+import mlx.nn as nn
 import pytest
 
-from mlxsnn.neurons import Leaky, IF, SpikingNeuron
+from mlxsnn.neurons import Leaky, IF, MSLeaky, SpikingNeuron
 
 
 class TestLeakyNeuron:
@@ -200,4 +201,102 @@ class TestNumericalConsistency:
         # With beta=0.9, constant input 0.3:
         # Membrane should reach ~0.3/(1-0.9) = 3.0 in steady state
         # but threshold=1.0 causes spikes, so we expect some spikes
+        assert total_spikes > 0
+
+
+class TestMSLeakyNeuron:
+    """Tests for the Multi-Scale Leaky neuron."""
+
+    def test_forward_shape_mixed(self):
+        ms = MSLeaky(num_scales=4, fire_mode="mixed")
+        state = ms.init_state(8, 32)
+        x = mx.ones((8, 32))
+        spk, new_state = ms(x, state)
+        mx.eval(spk, new_state["mem"])
+        assert spk.shape == (8, 32)
+        assert new_state["mem"].shape == (8, 4, 32)
+        assert "mem_mixed" in new_state
+        assert new_state["mem_mixed"].shape == (8, 32)
+
+    def test_forward_shape_per_scale(self):
+        ms = MSLeaky(num_scales=4, fire_mode="per_scale")
+        state = ms.init_state(8, 32)
+        x = mx.ones((8, 32))
+        spk, new_state = ms(x, state)
+        mx.eval(spk, new_state["mem"])
+        assert spk.shape == (8, 32)
+        assert new_state["mem"].shape == (8, 4, 32)
+        assert "mem_mixed" not in new_state
+
+    def test_init_state_zeros(self):
+        ms = MSLeaky(num_scales=3)
+        state = ms.init_state(4, 16)
+        mx.eval(state["mem"])
+        assert state["mem"].shape == (4, 3, 16)
+        assert mx.allclose(state["mem"], mx.zeros((4, 3, 16))).item()
+
+    def test_beta_initialization(self):
+        """Betas should be evenly spaced in [beta_min, beta_max]."""
+        ms = MSLeaky(num_scales=4, beta_min=0.5, beta_max=0.99)
+        betas = ms._get_betas()
+        mx.eval(betas)
+        expected = [0.5, 0.663, 0.827, 0.99]
+        for b, e in zip(betas.tolist(), expected):
+            assert abs(b - e) < 0.01, f"Beta {b} != expected {e}"
+
+    def test_mixed_mode_binary_output(self):
+        """Mixed mode should produce binary spikes."""
+        ms = MSLeaky(num_scales=4, fire_mode="mixed", threshold=0.5)
+        state = ms.init_state(8, 32)
+        x = mx.random.uniform(shape=(8, 32))
+        spk, _ = ms(x, state)
+        mx.eval(spk)
+        # All values should be 0 or 1
+        unique = set()
+        for v in spk.reshape(-1).tolist():
+            unique.add(v)
+        assert unique <= {0.0, 1.0}, f"Expected binary, got {unique}"
+
+    def test_gradient_flow(self):
+        """Gradients should flow through MSLeaky."""
+        ms = MSLeaky(num_scales=4, fire_mode="mixed", learn_beta=True)
+        fc = nn.Linear(16, 16)
+
+        def loss_fn(fc):
+            x = mx.ones((4, 16))
+            h = fc(x)
+            state = ms.init_state(4, 16)
+            spk, st = ms(h, state)
+            return mx.sum(st["mem_mixed"])
+
+        grads = mx.grad(loss_fn)(fc)
+        mx.eval(grads)
+        weight_grad = grads["weight"]
+        assert weight_grad.shape == (16, 16)
+        assert not mx.allclose(weight_grad, mx.zeros_like(weight_grad)).item()
+
+    def test_num_scales_1(self):
+        """Single scale should work and behave like regular LIF."""
+        ms = MSLeaky(num_scales=1, fire_mode="mixed")
+        state = ms.init_state(4, 16)
+        x = mx.ones((4, 16)) * 0.5
+        spk, new_state = ms(x, state)
+        mx.eval(spk, new_state["mem"])
+        assert spk.shape == (4, 16)
+        assert new_state["mem"].shape == (4, 1, 16)
+
+    def test_invalid_fire_mode(self):
+        with pytest.raises(ValueError, match="fire_mode"):
+            MSLeaky(fire_mode="invalid")
+
+    def test_multi_step(self):
+        """Run MSLeaky for multiple steps and verify spikes occur."""
+        ms = MSLeaky(num_scales=4, fire_mode="mixed", threshold=1.0)
+        state = ms.init_state(1, 8)
+        total_spikes = 0
+        for _ in range(20):
+            x = mx.ones((1, 8)) * 0.3
+            spk, state = ms(x, state)
+            mx.eval(spk, state["mem"])
+            total_spikes += mx.sum(spk).item()
         assert total_spikes > 0

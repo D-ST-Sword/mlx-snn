@@ -11,6 +11,7 @@ from mlxsnn.neurons.base import SpikingNeuron
 from mlxsnn.neurons.if_neuron import IF
 from mlxsnn.neurons.izhikevich import Izhikevich
 from mlxsnn.neurons.lif import Leaky
+from mlxsnn.neurons.ms_leaky import MSLeaky
 from mlxsnn.neurons.rleaky import RLeaky
 from mlxsnn.neurons.rsynaptic import RSynaptic
 from mlxsnn.neurons.synaptic import Synaptic
