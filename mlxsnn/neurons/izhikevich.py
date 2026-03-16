@@ -83,7 +83,7 @@ class Izhikevich(SpikingNeuron):
         d: float = 8.0,
         dt: float = 0.5,
         preset: str | None = None,
-        surrogate_fn: str = "fast_sigmoid",
+        surrogate_fn: str = "arctan",
         surrogate_scale: float = 0.1,
     ):
         # Threshold is fixed at 30 mV for the Izhikevich model, and the

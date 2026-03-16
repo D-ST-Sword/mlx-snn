@@ -43,8 +43,8 @@ class SpikingNeuron(nn.Module):
         threshold: float = 1.0,
         learn_threshold: bool = False,
         reset_mechanism: str = "subtract",
-        surrogate_fn: str = "fast_sigmoid",
-        surrogate_scale: float = 25.0,
+        surrogate_fn: str = "arctan",
+        surrogate_scale: float = 2.0,
     ):
         super().__init__()
         if learn_threshold:

@@ -23,7 +23,7 @@ _SURROGATE_REGISTRY = {
 }
 
 
-def get_surrogate(name: str, scale: float = 25.0):
+def get_surrogate(name: str, scale: float = 2.0):
     """Get a surrogate gradient function by name.
 
     Args:
