@@ -10,12 +10,33 @@ mlx-snn aims to provide an efficient, research-friendly SNN framework that lever
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://d-st-sword.github.io/mlx-snn/)
 
-## Why mlx-snn?
+## Highlights
 
-- **MLX-native** — All operations use `mlx.core`. No PyTorch/CUDA dependency. Runs on Apple Silicon with zero-copy unified memory.
-- **Research-friendly** — Explicit state dicts, composable surrogate gradients, and standard `mlx.nn.Module` patterns make it easy to experiment and extend.
-- **Cross-framework** — NIR support lets you import and export models to/from snnTorch, Norse, SpikingJelly, and neuromorphic hardware platforms.
-- **Hardware tested** — Currently validated on Apple M3 Max. Future Apple Silicon releases will be tested and supported as they become available.
+<table>
+<tr>
+<td width="33%" valign="top">
+
+**Unified Memory SNNs**
+
+SNNs store per-neuron states across every timestep — a memory bottleneck on discrete-GPU architectures. Apple Silicon's unified memory eliminates CPU↔GPU transfers, enabling extended temporal windows and larger reservoirs without the VRAM wall.
+
+</td>
+<td width="33%" valign="top">
+
+**17–25× Energy Efficiency**
+
+M3 Max trains SNNs **2.6–3.7× faster** than Tesla V100 at 1/7th the power. Recurrent spiking dynamics are latency-bound, not compute-bound — favoring Apple Silicon's high-bandwidth unified architecture over datacenter parallelism.
+
+</td>
+<td width="33%" valign="top">
+
+**Compile-Optimized Recurrence**
+
+`mx.compile` fuses per-timestep neuron operations for **2.9× speedup**. Chunked BPTT with state detachment scales to long temporal sequences. 10 neuron models, Liquid State Machine, and NIR interop — all in pure MLX.
+
+</td>
+</tr>
+</table>
 
 ## Installation
 
@@ -188,13 +209,13 @@ Key differences:
 mlxsnn/
 ├── neurons/       # Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha, RLeaky, RSynaptic
 ├── surrogate/     # arctan, fast_sigmoid, sigmoid, triangular, straight_through, custom
-├── encoding/      # rate, latency, delta, direct, repeat, EEG encoder
+├── encoding/      # rate, latency, delta, direct, repeat, frequency-band, threshold-crossing, EEG
 ├── functional/    # Stateless pure functions, 9 loss functions, metrics
 ├── layers/        # SpikingConv2d, MaxPool2d, AvgPool2d, Flatten, SpikeDropout
 ├── operators/     # TAC, TAC-TP, L-TAC, FTC, IMC, TCC
 ├── liquid/        # LiquidReservoir, LSM, topology generators
-├── datasets/      # DVSGesture, CIFAR10DVS, NMNIST, SHD
-├── training/      # BPTT helpers, mx.compile wrappers
+├── datasets/      # DVSGesture, CIFAR10DVS, NMNIST, SHD, SSC
+├── training/      # BPTT, chunked BPTT, mx.compile wrappers
 ├── utils/         # Visualization, state management
 └── nir_*.py       # NIR export/import utilities
 ```
@@ -207,7 +228,7 @@ mlxsnn/
 - [x] **v0.4** — Recurrent neurons, conv/pooling layers, neuromorphic datasets, TAC operators
 - [x] **v0.5** — Direct/repeat encoding, activity regularization, SpikeDropout, visualization, SHD dataset
 - [x] **v0.6** — CI/CD, API documentation site, complete examples
-- [x] **v0.7** — Liquid State Machine, reservoir topology, `mx.compile` optimization
+- [x] **v0.7** — LSM, MSLeaky neuron, chunked BPTT, `mx.compile`, frequency-band & threshold-crossing encoding
 - [ ] **v1.0** — Full documentation, comprehensive benchmarks, JOSS paper
 
 ## Publications
