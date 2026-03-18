@@ -15,9 +15,8 @@ Reference:
 
 from __future__ import annotations
 
-import numpy as np
-
 import mlx.core as mx
+import numpy as np
 
 # Canonical EEG frequency bands (Hz)
 DEFAULT_BANDS = {
