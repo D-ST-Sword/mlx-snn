@@ -30,9 +30,9 @@ M3 Max trains SNNs **2.6–3.7× faster** than Tesla V100 at 1/7th the power. Re
 </td>
 <td width="33%" valign="top">
 
-**Compile-Optimized Recurrence**
+**Multi-Scale Temporal Modeling**
 
-`mx.compile` fuses per-timestep neuron operations for **2.9× speedup**. Chunked BPTT with state detachment scales to long temporal sequences. 10 neuron models, Liquid State Machine, and NIR interop — all in pure MLX.
+`MSLeaky` assigns frequency-matched decay rates to parallel spiking branches — capturing delta through gamma dynamics in a single network. Chunked BPTT with state detachment scales to long biosignal sequences (EEG, fMRI) without exploding memory.
 
 </td>
 </tr>
