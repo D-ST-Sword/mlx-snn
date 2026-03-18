@@ -17,9 +17,11 @@ from mlxsnn.encoding import (
     EEGEncoder,
     delta_encode,
     direct_encode,
+    frequency_band_encode,
     latency_encode,
     rate_encode,
     repeat_encode,
+    threshold_crossing_encode,
 )
 
 # Functional API

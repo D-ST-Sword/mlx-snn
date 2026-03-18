@@ -5,14 +5,24 @@ All notable changes to mlx-snn are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [0.7.0] - 2026-03-14
+## [0.7.0] - 2026-03-18
 
 ### Added
 - **Liquid State Machine** — `LiquidReservoir`, `LSM` with trainable readout
 - **Reservoir topologies** — Erdos-Renyi, Watts-Strogatz small-world, Barabasi-Albert scale-free
 - **Dale's law** enforcement — excitatory/inhibitory neuron balance with configurable ratio
 - **`mx.compile` optimization** — `compiled_step`, `compiled_forward` for per-timestep compilation
+- **MSLeaky neuron** — multi-scale LIF with per-branch learnable `beta` for frequency-guided spiking
+- **SSC dataset** — Spiking Speech Commands dataset loader (HDF5 format)
+- **Truncated BPTT** — `chunked_bptt_forward` for memory-efficient training on long sequences, `detach_state` utility
+- **Frequency-band encoding** — `frequency_band_encode` for EEG-to-spike conversion via band decomposition (delta/theta/alpha/beta/gamma)
+- **Threshold-crossing encoding** — `threshold_crossing_encode` for multi-level amplitude crossing detection
+- **Benchmark suite** — forward pass, training loop, and memory benchmarks for v0.7 features
 - LSM API docs and topology generators documentation
+
+### Changed
+- **Default surrogate gradient** changed from `fast_sigmoid` to `arctan` (better gradient properties for deep networks)
+- Updated README with v0.7 benchmark results and revised project structure
 
 ## [0.6.0] - 2026-03-14
 
