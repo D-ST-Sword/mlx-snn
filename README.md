@@ -9,6 +9,9 @@ mlx-snn aims to provide an efficient, research-friendly SNN framework that lever
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://d-st-sword.github.io/mlx-snn/)
+[![arXiv](https://img.shields.io/badge/arXiv-2603.03529-b31b1b.svg)](https://arxiv.org/abs/2603.03529)
+
+> **9 neuron models** · **6 surrogate gradients** · **8 spike encodings** · **5 neuromorphic datasets** · **LSM reservoir** · **NIR interop** · **403 tests**
 
 ## Highlights
 
@@ -71,77 +74,163 @@ print("Output membrane:", state["mem"].shape)  # (8, 10)
 
 ### Neuron Models
 
-| Model | Since | Description |
-|-------|-------|-------------|
-| **Leaky (LIF)** | v0.1 | Leaky Integrate-and-Fire with configurable decay |
-| **IF** | v0.1 | Integrate-and-Fire (non-leaky) |
-| **Izhikevich** | v0.2 | 2D dynamics with RS/IB/CH/FS presets |
-| **Adaptive LIF** | v0.2 | LIF with adaptive threshold |
-| **Synaptic** | v0.2 | Conductance-based dual-state LIF |
-| **Alpha** | v0.2 | Dual-exponential synaptic model |
-| **RLeaky** | v0.4 | Recurrent LIF with learnable feedback weight |
-| **RSynaptic** | v0.4 | Recurrent Synaptic with learnable feedback weight |
+All neurons support `learn_beta`, `learn_threshold`, and configurable reset mechanisms (`subtract` / `zero` / `none`). State is always an explicit dict — compatible with MLX's functional transforms and `mx.compile`.
+
+| Model | Description | State Variables |
+|-------|-------------|-----------------|
+| **Leaky (LIF)** | Leaky Integrate-and-Fire with configurable decay | `mem` |
+| **IF** | Integrate-and-Fire (non-leaky, perfect integrator) | `mem` |
+| **Izhikevich** | 2D dynamics with RS/IB/CH/FS presets | `mem`, `recovery` |
+| **ALIF** | Adaptive LIF with dynamic threshold | `mem`, `threshold` |
+| **Synaptic** | Conductance-based dual-state LIF | `syn`, `mem` |
+| **Alpha** | Dual-exponential synaptic model | `syn`, `mem` |
+| **RLeaky** | Recurrent LIF with learnable feedback | `mem`, `spk` |
+| **RSynaptic** | Recurrent Synaptic with learnable feedback | `syn`, `mem`, `spk` |
+| **MSLeaky** | Multi-scale LIF with per-branch frequency-matched `beta` | `mem` per branch |
 
 ### Surrogate Gradients
 
-All neuron models support differentiable training via surrogate gradients:
-- **Arctan** — default, matches snnTorch's default for stable BPTT convergence
-- **Fast Sigmoid** — rational approximation with heavier tails
-- **Sigmoid** — standard logistic sigmoid derivative
-- **Triangular (Tent)** — localized, compact support near threshold
-- **Straight-Through Estimator** — simplest, unit gradient everywhere
-- **Custom** — plug in any smooth approximation
+All neurons support differentiable training through 6 surrogate gradient functions:
+
+| Function | Formula (backward) | Properties |
+|----------|-------------------|------------|
+| **Arctan** (default) | `α / (2(1 + (πα x/2)²))` | Stable BPTT convergence, moderate locality |
+| **Fast Sigmoid** | `scale / (1 + scale·\|x\|)²` | Heavier tails, smoother gradients |
+| **Sigmoid** | `scale · σ(scale·x) · (1 − σ(scale·x))` | Standard logistic derivative |
+| **Triangular** | `max(0, 1 − scale·\|x\|)` | Compact support, localized near threshold |
+| **Straight-Through** | `1` | Simplest, unit gradient everywhere |
+| **Custom** | User-defined | Plug in any differentiable approximation |
 
 ### Spike Encoding
 
-| Method | Since | Use Case |
+8 encoding methods for converting continuous signals into spike trains:
+
+| Method | Input | Use Case |
 |--------|-------|----------|
-| **Rate (Poisson)** | v0.1 | Static images, general-purpose |
-| **Latency (TTFS)** | v0.1 | Energy-efficient, temporal coding |
-| **Delta Modulation** | v0.2 | Temporal signals, change detection |
-| **EEG Encoder** | v0.2 | EEG-to-spike with frequency band support |
+| **Rate (Poisson)** | Static values | Images, general-purpose classification |
+| **Latency (TTFS)** | Static values | Energy-efficient temporal coding |
+| **Delta Modulation** | Temporal signals | Change detection, event-like encoding |
+| **Direct** | Any tensor | Pass-through for pre-computed inputs |
+| **Repeat** | Spike patterns | Tile spike trains across longer windows |
+| **Frequency-Band** | EEG signals | FFT-based decomposition into delta/theta/alpha/beta/gamma bands |
+| **Threshold-Crossing** | Temporal signals | Multi-level amplitude crossing detection |
+| **EEG Encoder** | Raw EEG | Configurable rate/delta/threshold encoding for biosignals |
 
-### Training & Loss Functions
+### Convolutional SNN Layers
 
-- BPTT forward pass helper (`bptt_forward`)
-- Loss functions: `ce_rate_loss`, `ce_count_loss`, `mse_membrane_loss`, `membrane_loss`, `rate_coding_loss`
-- Learnable parameters: `learn_beta`, `learn_threshold`, `learn_V` on all neurons
-- Works with standard MLX optimizers (`mlx.optimizers.Adam`, etc.)
+Build deep spiking convolutional networks with spatial pooling:
+
+```python
+import mlxsnn
+
+conv1 = mlxsnn.SpikingConv2d(in_channels=2, out_channels=64, kernel_size=3, padding=1)
+pool1 = mlxsnn.SpikingMaxPool2d(kernel_size=2, stride=2)
+lif1  = mlxsnn.Leaky(beta=0.95)
+drop  = mlxsnn.SpikeDropout(p=0.2)  # spike-aware (no rescaling)
+flat  = mlxsnn.SpikingFlatten()
+```
+
+Also includes 6 mathematically-principled temporal operators for Conv SNNs: **TAC** (Temporal Aggregated Conv), **TAC-TP** (Temporal-Preserving), **L-TAC** (Learnable), **FTC** (Fourier Temporal Conv), **IMC** (InfoMax Spike Conv), **TCC** (Temporal Collapse Conv).
+
+### Liquid State Machine
+
+Reservoir computing with spiking neurons — random sparse recurrent connectivity with configurable topology:
+
+```python
+import mlxsnn
+
+lsm = mlxsnn.LSM(
+    input_size=64, reservoir_size=500, output_size=10,
+    connectivity=0.1, spectral_radius=0.9,
+    topology="small_world",  # also: "erdos_renyi", "scale_free"
+    exc_ratio=0.8,           # Dale's law: 80% excitatory
+)
+state = lsm.init_state(batch_size=32)
+
+for t in range(num_steps):
+    output, state = lsm(spikes[t], state)
+```
+
+### Training Utilities
+
+**BPTT variants:**
+- `bptt_forward(model, spikes, state)` — standard backpropagation through time
+- `chunked_bptt_forward(model, spikes, state, chunk_size)` — memory-efficient training on long sequences via state detachment at chunk boundaries
+- `detach_state(state)` — detach all tensors in a state dict (for truncated BPTT)
+
+**`mx.compile` wrappers:**
+- `compiled_step(model)` — compile a single-timestep forward pass
+- `compiled_forward(model, num_steps)` — compile a full temporal forward pass
+
+**Loss functions (11 total):**
+
+| Loss | Approach |
+|------|----------|
+| `ce_rate_loss` | Cross-entropy on spike rates (spike count / T) |
+| `ce_count_loss` | Cross-entropy on raw spike counts |
+| `mse_membrane_loss` | MSE on final membrane potential |
+| `mse_count_loss` | MSE on spike counts vs targets |
+| `membrane_loss` | Cross-entropy on final membrane potential |
+| `rate_coding_loss` | Cross-entropy on log-softmax of spike counts |
+| `activity_reg_loss` | Penalize deviation from target firing rate |
+| `l1_spike_loss` | L1 sparsity penalty on spike counts |
+| `l2_spike_loss` | L2 regularization on spike counts |
+
+Utility functions: `spike_rate`, `spike_count`.
+
+**Learnable parameters:** `learn_beta`, `learn_threshold`, `learn_V` on all neurons. Works with standard MLX optimizers (`mlx.optimizers.Adam`, etc.).
+
+### Neuromorphic Datasets
+
+5 built-in dataset loaders with automatic download, caching, and event-to-frame conversion:
+
+| Dataset | Modality | Classes | Samples |
+|---------|----------|---------|---------|
+| **DVS-Gesture** | Event camera (hand gestures) | 11 | 1,342 |
+| **CIFAR10-DVS** | Event camera (natural images) | 10 | 10,000 |
+| **N-MNIST** | Event camera (digits) | 10 | 70,000 |
+| **SHD** | Audio (spoken digits) | 20 | 10,420 |
+| **SSC** | Audio (spoken commands) | 35 | 100,000+ |
+
+```python
+from mlxsnn.datasets import DVSGestureDataset, create_dataloader
+
+dataset = DVSGestureDataset(root="./data", split="train", dt=5000)
+loader = create_dataloader(dataset, batch_size=16, shuffle=True)
+```
+
+### Visualization
+
+Requires `pip install mlx-snn[viz]` (matplotlib).
+
+```python
+from mlxsnn.utils.visualization import plot_raster, plot_membrane, plot_firing_rate
+
+plot_raster(spike_tensor, title="Layer 1 Spikes")       # spike raster over time
+plot_membrane(state["mem"], title="Membrane Potential")  # membrane trace
+plot_firing_rate(spike_tensor, title="Firing Rates")     # per-neuron rates
+```
 
 ### NIR Interoperability
 
-[NIR](https://github.com/neuromorphs/NIR) (Neuromorphic Intermediate Representation) enables cross-framework SNN model exchange between simulators and neuromorphic hardware platforms.
+[NIR](https://github.com/neuromorphs/NIR) enables cross-framework SNN model exchange — import/export models to snnTorch, Norse, SpikingJelly, and neuromorphic hardware.
 
 ```bash
 pip install mlx-snn[nir]
 ```
 
-**Export** an mlx-snn model to NIR:
-
 ```python
-import mlx.nn as nn
-import mlxsnn, nir
+# Export
+layers = [('fc1', nn.Linear(784, 128)), ('lif1', mlxsnn.Leaky(beta=0.9)),
+          ('fc2', nn.Linear(128, 10)),   ('lif2', mlxsnn.Leaky(beta=0.9))]
+nir.write('model.nir', mlxsnn.export_to_nir(layers))
 
-layers = [
-    ('fc1', nn.Linear(784, 128)),
-    ('lif1', mlxsnn.Leaky(beta=0.9)),
-    ('fc2', nn.Linear(128, 10)),
-    ('lif2', mlxsnn.Leaky(beta=0.9)),
-]
-graph = mlxsnn.export_to_nir(layers)
-nir.write('model.nir', graph)
+# Import
+model = mlxsnn.import_from_nir(nir.read('model.nir'))
+out, state = model(x, model.init_states(batch_size=32))
 ```
 
-**Import** a NIR model into mlx-snn:
-
-```python
-graph = nir.read('model.nir')
-model = mlxsnn.import_from_nir(graph)
-state = model.init_states(batch_size=32)
-out, state = model(x, state)
-```
-
-Supported conversions: `nn.Linear` <-> `nir.Affine`/`nir.Linear`, `Leaky` <-> `nir.LIF`, `IF` <-> `nir.IF`, `Synaptic` <-> `nir.CubaLIF`.
+Supported: `nn.Linear` ↔ `nir.Affine`/`nir.Linear`, `Leaky` ↔ `nir.LIF`, `IF` ↔ `nir.IF`, `Synaptic` ↔ `nir.CubaLIF`.
 
 ## Benchmarks
 
@@ -189,28 +278,25 @@ For detailed results and reproduction scripts, see [`benchmarks/`](benchmarks/) 
 
 mlx-snn is designed to feel familiar to snnTorch users:
 
-```python
-# snnTorch                          # mlx-snn
-import snntorch as snn              import mlxsnn
-lif = snn.Leaky(beta=0.9)          lif = mlxsnn.Leaky(beta=0.9)
-spk, mem = lif(x, mem)             spk, state = lif(x, state)
-                                    # state["mem"] == mem
-```
+| | snnTorch (PyTorch) | mlx-snn (MLX) |
+|---|---|---|
+| Import | `import snntorch as snn` | `import mlxsnn` |
+| Create | `lif = snn.Leaky(beta=0.9)` | `lif = mlxsnn.Leaky(beta=0.9)` |
+| Forward | `spk, mem = lif(x, mem)` | `spk, state = lif(x, state)` |
+| State | Separate tensors (`mem`) | Explicit dict (`state["mem"]`) |
+| Tensors | `torch.Tensor` | `mx.array` |
+| Gradients | `autograd` + surrogate | STE pattern + `mx.stop_gradient` |
 
-Key differences:
-- **State is a dict**, not separate tensors — plays well with MLX functional transforms
-- **No global hidden state** — state is always explicit (pass in, get out)
-- **MLX arrays** instead of PyTorch tensors — use `mx.array`, not `torch.Tensor`
-- **Surrogate gradients** use the STE pattern with `mx.stop_gradient`
+Key design difference: **state is always an explicit dict** — pass in, get out. No hidden instance variables. This plays well with MLX's functional transforms (`mx.grad`, `mx.vmap`, `mx.compile`).
 
 ## Project Structure
 
 ```
 mlxsnn/
-├── neurons/       # Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha, RLeaky, RSynaptic
+├── neurons/       # Leaky, IF, Izhikevich, ALIF, Synaptic, Alpha, RLeaky, RSynaptic, MSLeaky
 ├── surrogate/     # arctan, fast_sigmoid, sigmoid, triangular, straight_through, custom
 ├── encoding/      # rate, latency, delta, direct, repeat, frequency-band, threshold-crossing, EEG
-├── functional/    # Stateless pure functions, 9 loss functions, metrics
+├── functional/    # Stateless pure functions, 11 loss functions, metrics
 ├── layers/        # SpikingConv2d, MaxPool2d, AvgPool2d, Flatten, SpikeDropout
 ├── operators/     # TAC, TAC-TP, L-TAC, FTC, IMC, TCC
 ├── liquid/        # LiquidReservoir, LSM, topology generators
