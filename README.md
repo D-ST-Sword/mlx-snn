@@ -74,16 +74,16 @@ print("Output membrane:", state["mem"].shape)  # (8, 10)
 
 ### Neuron Models
 
-All neurons support `learn_beta`, `learn_threshold`, and configurable reset mechanisms (`subtract` / `zero` / `none`). State is always an explicit dict — compatible with MLX's functional transforms and `mx.compile`.
+All neurons support `learn_threshold` and configurable reset mechanisms (`subtract` / `zero` / `none`). Neurons with a decay constant support `learn_beta`; recurrent neurons support `learn_V`. State is always an explicit dict — compatible with MLX's functional transforms and `mx.compile`.
 
 | Model | Description | State Variables |
 |-------|-------------|-----------------|
 | **Leaky (LIF)** | Leaky Integrate-and-Fire with configurable decay | `mem` |
 | **IF** | Integrate-and-Fire (non-leaky, perfect integrator) | `mem` |
-| **Izhikevich** | 2D dynamics with RS/IB/CH/FS presets | `mem`, `recovery` |
-| **ALIF** | Adaptive LIF with dynamic threshold | `mem`, `threshold` |
+| **Izhikevich** | 2D dynamics with RS/IB/CH/FS presets | `v`, `u` |
+| **ALIF** | Adaptive LIF with dynamic threshold | `mem`, `adapt` |
 | **Synaptic** | Conductance-based dual-state LIF | `syn`, `mem` |
-| **Alpha** | Dual-exponential synaptic model | `syn`, `mem` |
+| **Alpha** | Dual-exponential synaptic model | `syn_exc`, `syn_inh`, `mem` |
 | **RLeaky** | Recurrent LIF with learnable feedback | `mem`, `spk` |
 | **RSynaptic** | Recurrent Synaptic with learnable feedback | `syn`, `mem`, `spk` |
 | **MSLeaky** | Multi-scale LIF with per-branch frequency-matched `beta` | `mem` per branch |
@@ -92,12 +92,12 @@ All neurons support `learn_beta`, `learn_threshold`, and configurable reset mech
 
 All neurons support differentiable training through 6 surrogate gradient functions:
 
-| Function | Formula (backward) | Properties |
-|----------|-------------------|------------|
-| **Arctan** (default) | `α / (2(1 + (πα x/2)²))` | Stable BPTT convergence, moderate locality |
-| **Fast Sigmoid** | `scale / (1 + scale·\|x\|)²` | Heavier tails, smoother gradients |
-| **Sigmoid** | `scale · σ(scale·x) · (1 − σ(scale·x))` | Standard logistic derivative |
-| **Triangular** | `max(0, 1 − scale·\|x\|)` | Compact support, localized near threshold |
+| Function | Surrogate gradient | Properties |
+|----------|--------------------|------------|
+| **Arctan** (default) | `α / (π(1 + α²x²))` | Stable BPTT convergence, moderate locality |
+| **Fast Sigmoid** | `scale / (2(1 + scale·\|x\|)²)` | Heavier tails, rational decay |
+| **Sigmoid** | `slope · σ(slope·x) · (1 − σ(slope·x))` | Standard logistic derivative |
+| **Triangular** | `max(0, 1 − \|x\|)` | Compact support, localized near threshold |
 | **Straight-Through** | `1` | Simplest, unit gradient everywhere |
 | **Custom** | User-defined | Plug in any differentiable approximation |
 
@@ -159,8 +159,8 @@ for t in range(num_steps):
 - `detach_state(state)` — detach all tensors in a state dict (for truncated BPTT)
 
 **`mx.compile` wrappers:**
-- `compiled_step(model)` — compile a single-timestep forward pass
-- `compiled_forward(model, num_steps)` — compile a full temporal forward pass
+- `compiled_step(model)` — returns a compiled single-timestep callable
+- `compiled_forward(model, spikes, state)` — BPTT forward pass with per-timestep `mx.compile`
 
 **Loss functions (11 total):**
 
@@ -178,7 +178,7 @@ for t in range(num_steps):
 
 Utility functions: `spike_rate`, `spike_count`.
 
-**Learnable parameters:** `learn_beta`, `learn_threshold`, `learn_V` on all neurons. Works with standard MLX optimizers (`mlx.optimizers.Adam`, etc.).
+**Learnable parameters:** `learn_threshold` (all neurons), `learn_beta` (LIF-based neurons), `learn_V` (recurrent neurons). Works with standard MLX optimizers (`mlx.optimizers.Adam`, etc.).
 
 ### Neuromorphic Datasets
 
@@ -195,7 +195,7 @@ Utility functions: `spike_rate`, `spike_count`.
 ```python
 from mlxsnn.datasets import DVSGestureDataset, create_dataloader
 
-dataset = DVSGestureDataset(root="./data", split="train", dt=5000)
+dataset = DVSGestureDataset(root="./data", train=True, num_steps=16)
 loader = create_dataloader(dataset, batch_size=16, shuffle=True)
 ```
 
@@ -234,7 +234,7 @@ Supported: `nn.Linear` ↔ `nir.Affine`/`nir.Linear`, `Leaky` ↔ `nir.LIF`, `IF
 
 ## Benchmarks
 
-All experiments use identical hyperparameters: Adam (LR=1e-3), Poisson rate encoding, T=25 timesteps, batch size 128, 5 random seeds, 10 epochs. Full scripts in [`benchmarks/`](benchmarks/).
+All experiments use identical hyperparameters: Adam (LR=1e-3), Poisson rate encoding, T=25 timesteps, batch size 128, 5 random seeds, 10 epochs, `surrogate_fn="fast_sigmoid"`. Full scripts in [`benchmarks/`](benchmarks/) and our [arXiv paper](https://arxiv.org/abs/2603.03529).
 
 ### Training Accuracy (identical within noise)
 
