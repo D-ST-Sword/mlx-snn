@@ -1,0 +1,5 @@
+model,batch_size,avg_ms,std_ms,samples_per_sec
+m1_fc2l,128,74.058,0.831,1728.4
+m2_fc3l,128,112.319,0.705,1139.6
+m3_recurrent,128,90.404,1.425,1415.9
+m4_lsm,128,11.224,0.291,11404.4
