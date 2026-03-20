@@ -1,10 +1,12 @@
 """Arctan surrogate gradient.
 
 Forward: Heaviside step function  H(x) = 1 if x >= 0 else 0
-Backward: d/dx (1/pi * arctan(alpha * x) + 0.5)
+Backward: d/dx (1/pi * arctan(pi/2 * alpha * x) + 0.5)
 
-Uses the STE pattern with an arctan-based smooth approximation:
-    approx(x) = 1/pi * arctan(alpha * x) + 0.5
+Uses the STE pattern with an arctan-based smooth approximation
+matching snnTorch's ATan convention:
+    approx(x) = 1/pi * arctan(pi/2 * alpha * x) + 0.5
+    gradient at x=0 = alpha/2
 """
 
 import mlx.core as mx
@@ -13,8 +15,12 @@ import mlx.core as mx
 def arctan_surrogate(alpha: float = 2.0):
     """Create an arctan surrogate gradient function.
 
+    Matches snnTorch's ``surrogate.atan(alpha)`` gradient:
+    ``grad(x=0) = alpha / 2``.
+
     Args:
         alpha: Controls the sharpness of the surrogate gradient.
+            With ``alpha=2.0``, the peak gradient at threshold is 1.0.
 
     Returns:
         A callable with Heaviside forward and arctan backward.
@@ -22,7 +28,7 @@ def arctan_surrogate(alpha: float = 2.0):
 
     def forward(x):
         heaviside = mx.where(x >= 0, mx.ones_like(x), mx.zeros_like(x))
-        approx = (1.0 / mx.pi) * mx.arctan(alpha * x) + 0.5
+        approx = (1.0 / mx.pi) * mx.arctan(mx.pi / 2.0 * alpha * x) + 0.5
         return mx.stop_gradient(heaviside - approx) + approx
 
     return forward
